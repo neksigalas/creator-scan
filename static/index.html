@@ -4,602 +4,993 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CreatorScan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:        #0d0d1a;
-    --surface:   #14142b;
-    --surface2:  #1e1e3f;
-    --border:    #2a2a4a;
-    --accent:    #7c3aed;
-    --accent2:   #a855f7;
-    --green:     #10b981;
-    --yellow:    #f59e0b;
-    --red:       #ef4444;
-    --blue:      #3b82f6;
-    --text:      #e2e8f0;
-    --text2:     #94a3b8;
-    --text3:     #64748b;
-    --card-h:    220px;
-  }
+/* ── TOKENS ────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:         #f1f5f9;
+  --surface:    #ffffff;
+  --surface2:   #f8fafc;
+  --border:     #e2e8f0;
+  --accent:     #1d4ed8;
+  --accent-lt:  #eff6ff;
+  --text:       #0f172a;
+  --text2:      #64748b;
+  --text3:      #94a3b8;
+  --green:      #059669;
+  --green-lt:   #ecfdf5;
 
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  --yt:   #FF0000;
+  --tw:   #9146FF;
+  --tk:   #FE2C55;
+  --ig:   #C13584;
 
-  /* ── TOP BAR ── */
-  .topbar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  --r:    8px;
+  --r-sm: 5px;
+  --r-lg: 12px;
+  --sh:   0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
+  --sh-md:0 4px 16px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:       #0f172a;
+    --surface:  #1e293b;
+    --surface2: #263244;
+    --border:   #334155;
+    --accent:   #3b82f6;
+    --accent-lt:#1e3358;
+    --text:     #f1f5f9;
+    --text2:    #94a3b8;
+    --text3:    #64748b;
+    --green-lt: #064e3b;
   }
-  .logo { font-size: 18px; font-weight: 800; color: var(--accent2); letter-spacing: -0.5px; }
-  .logo span { color: var(--text2); font-weight: 400; font-size: 13px; margin-left: 6px; }
-  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-  .stat-chip {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: var(--text2);
-  }
-  .stat-chip b { color: var(--accent2); }
+}
+:root[data-theme="dark"] {
+  --bg:       #0f172a;
+  --surface:  #1e293b;
+  --surface2: #263244;
+  --border:   #334155;
+  --accent:   #3b82f6;
+  --accent-lt:#1e3358;
+  --text:     #f1f5f9;
+  --text2:    #94a3b8;
+  --text3:    #64748b;
+  --green-lt: #064e3b;
+}
 
-  /* ── LAYOUT ── */
-  .layout { display: flex; flex: 1; min-height: 0; }
+/* ── BASE ───────────────────────────────────────────────────────────────────── */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  line-height: 1.5;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 260px;
-    min-width: 260px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 20px 16px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .filter-section { display: flex; flex-direction: column; gap: 8px; }
-  .filter-label {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-  }
-  .filter-input, .filter-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: var(--text);
-    font-size: 13px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
-  .filter-select option { background: var(--surface2); }
+/* ── TOP BAR ─────────────────────────────────────────────────────────────────── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+.logo-text { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.4px; }
+.logo-sub { font-size: 11px; font-weight: 500; color: var(--text3); margin-top: 1px; }
 
-  .range-row { display: flex; gap: 6px; align-items: center; }
-  .range-row input { flex: 1; }
-  .range-sep { color: var(--text3); font-size: 12px; }
+.topbar-search {
+  flex: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  position: relative;
+}
+.topbar-search input {
+  width: 100%;
+  height: 38px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 19px;
+  padding: 0 16px 0 40px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.topbar-search input::placeholder { color: var(--text3); }
+.topbar-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29,78,216,.12);
+  background: var(--surface);
+}
+.search-icon-wrap {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  pointer-events: none;
+  display: flex;
+}
+.search-icon-wrap svg { width: 16px; height: 16px; }
 
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-  .toggle-row label { font-size: 13px; cursor: pointer; }
-  .toggle { position: relative; width: 36px; height: 20px; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    transition: 0.2s;
-    cursor: pointer;
-  }
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 14px; height: 14px;
-    left: 2px; top: 2px;
-    background: var(--text3);
-    border-radius: 50%;
-    transition: 0.2s;
-  }
-  .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: #fff; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.tstat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+}
+.tstat b { color: var(--text); }
 
-  .platform-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-  .ptab {
-    flex: 1;
-    padding: 6px 4px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    min-width: 50px;
-  }
-  .ptab:hover { border-color: var(--accent); color: var(--accent2); }
-  .ptab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* ── LAYOUT ──────────────────────────────────────────────────────────────────── */
+.layout { display: flex; flex: 1; overflow: hidden; min-height: calc(100vh - 60px); }
 
-  .niche-pills { display: flex; flex-wrap: wrap; gap: 4px; }
-  .npill {
-    padding: 4px 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    font-size: 11px;
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .npill:hover { border-color: var(--accent); color: var(--accent2); }
-  .npill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 272px;
+  min-width: 272px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.sidebar-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-section:last-child { border-bottom: none; }
+.section-heading {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
 
-  .btn {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent2); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text2);
-  }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent2); }
-  .btn-green { background: var(--green); color: #fff; }
-  .btn-green:hover { opacity: 0.85; }
+/* Platform buttons */
+.platform-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ptab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .12s;
+  width: 100%;
+  text-align: left;
+}
+.ptab:hover { background: var(--surface2); color: var(--text); }
+.ptab .ptab-icon {
+  width: 28px; height: 28px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ptab .ptab-icon svg { width: 16px; height: 16px; }
+.ptab .ptab-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 7px;
+  min-width: 28px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ptab.active {
+  background: var(--accent-lt);
+  border-color: rgba(29,78,216,.2);
+  color: var(--accent);
+}
+.ptab.active .ptab-count { background: rgba(29,78,216,.1); border-color: rgba(29,78,216,.2); color: var(--accent); }
+.ptab[data-val="youtube"].active .ptab-icon { background: #fff0f0; }
+.ptab[data-val="twitch"].active  .ptab-icon { background: #f5f0ff; }
+.ptab[data-val="tiktok"].active  .ptab-icon { background: #fff0f3; }
+.ptab[data-val="instagram"].active .ptab-icon { background: #fdf0f7; }
 
-  /* ── MAIN ── */
-  .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+/* Niche pills */
+.niche-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.npill {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .12s;
+}
+.npill:hover { border-color: var(--accent); color: var(--accent); }
+.npill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* ── SEARCH BAR ── */
-  .search-bar { display: flex; gap: 10px; align-items: center; }
-  .search-input-wrap { flex: 1; position: relative; }
-  .search-input-wrap input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 16px 10px 40px;
-    color: var(--text);
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .search-input-wrap input:focus { border-color: var(--accent); }
-  .search-icon {
-    position: absolute;
-    left: 12px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--text3);
-    font-size: 16px;
-    pointer-events: none;
-  }
-  .result-count { font-size: 13px; color: var(--text2); white-space: nowrap; }
+/* Followers */
+.followers-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.fol-input-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.fol-input-wrap label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+.fol-input-wrap input {
+  width: 100%;
+  padding: 7px 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color .12s;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+}
+.fol-input-wrap input:focus { border-color: var(--accent); }
+.fol-sep { color: var(--text3); font-size: 16px; font-weight: 300; padding-top: 18px; }
+.presets { display: flex; gap: 4px; flex-wrap: wrap; }
+.preset-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 5px 4px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-align: center;
+  transition: all .12s;
+}
+.preset-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
 
-  /* ── STATS BAR ── */
-  .stats-bar { display: flex; gap: 12px; flex-wrap: wrap; }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    flex: 1;
-    min-width: 120px;
-  }
-  .stat-card .sc-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
-  .stat-card .sc-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
-  .stat-card .sc-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+/* Language */
+.filter-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .12s;
+  font-family: inherit;
+}
+.filter-input:focus { border-color: var(--accent); }
+.filter-input::placeholder { color: var(--text3); }
 
-  /* ── CREATOR GRID ── */
-  .creators-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 14px;
-  }
+/* Email toggle */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  transition: border-color .12s;
+  user-select: none;
+}
+.toggle-label:hover { border-color: var(--accent); }
+.toggle-label span.tog-text { font-size: 13px; font-weight: 600; color: var(--text2); flex: 1; }
+.toggle-switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.tog-track {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 20px;
+  transition: background .15s;
+}
+.tog-thumb {
+  position: absolute;
+  width: 14px; height: 14px;
+  top: 3px; left: 3px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .15s;
+}
+.toggle-switch input:checked ~ .tog-track { background: var(--accent); }
+.toggle-switch input:checked ~ .tog-thumb { transform: translateX(16px); }
 
-  .creator-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: border-color 0.15s, transform 0.1s;
-    cursor: default;
-  }
-  .creator-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+/* Buttons */
+.sidebar-actions { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--border); }
+.btn-apply {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 700;
+  transition: opacity .12s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-apply:hover { opacity: .9; transform: translateY(-1px); }
+.btn-apply svg { width: 14px; height: 14px; }
+.btn-export {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .12s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-export:hover { border-color: var(--green); color: var(--green); }
+.btn-export svg { width: 14px; height: 14px; }
 
-  .card-top { display: flex; align-items: center; gap: 12px; }
-  .card-avatar {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--blue));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .card-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
-  .card-username { font-size: 11px; color: var(--text3); }
+/* Scan panel */
+.scan-options { display: flex; gap: 6px; margin-bottom: 8px; }
+.scan-select {
+  flex: 1;
+  padding: 7px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  outline: none;
+}
+.scan-select:focus { border-color: var(--accent); }
+.scan-log {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  height: 100px;
+  overflow-y: auto;
+  font-size: 11px;
+  font-family: 'Consolas', 'SF Mono', monospace;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+.btn-scan {
+  width: 100%;
+  padding: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all .12s;
+}
+.btn-scan:hover { background: var(--accent-lt); border-color: var(--accent); color: var(--accent); }
+.btn-scan:disabled { opacity: .5; cursor: not-allowed; }
 
-  .card-stats { display: flex; gap: 8px; }
-  .card-stat {
-    flex: 1;
-    background: var(--surface2);
-    border-radius: 7px;
-    padding: 6px 8px;
-    text-align: center;
-  }
-  .card-stat .cs-val { font-size: 14px; font-weight: 700; color: var(--text); }
-  .card-stat .cs-lbl { font-size: 10px; color: var(--text3); }
+/* ── MAIN ────────────────────────────────────────────────────────────────────── */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
-  .card-badges { display: flex; flex-wrap: wrap; gap: 5px; }
-  .badge {
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
-  .badge-platform-youtube  { background: #fee2e2; color: #991b1b; }
-  .badge-platform-twitch   { background: #ede9fe; color: #5b21b6; }
-  .badge-platform-tiktok   { background: #fce7f3; color: #9d174d; }
-  .badge-platform-instagram{ background: #fef3c7; color: #92400e; }
-  .badge-niche { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
-  .badge-email { background: #d1fae5; color: #065f46; }
+/* Stats row */
+.stats-row {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.pstat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  min-width: 110px;
+}
+.pstat-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.pstat-icon svg { width: 18px; height: 18px; }
+.pstat-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.pstat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-top: 2px;
+}
+.pstat-all .pstat-icon { background: var(--accent-lt); }
+.pstat-all .pstat-icon svg { fill: var(--accent); }
+.pstat-email .pstat-icon { background: var(--green-lt); }
+.pstat-email .pstat-icon svg { fill: var(--green); }
+.pstat-yt   .pstat-icon { background: #fff0f0; }
+.pstat-tw   .pstat-icon { background: #f5f0ff; }
+.pstat-tk   .pstat-icon { background: #fff0f3; }
+.pstat-ig   .pstat-icon { background: #fdf0f7; }
 
-  .card-bio {
-    font-size: 11px;
-    color: var(--text3);
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+/* Toolbar above grid */
+.grid-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+}
+.result-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.result-count b { color: var(--text); }
+.toolbar-spacer { flex: 1; }
 
-  .card-actions { display: flex; gap: 6px; margin-top: 2px; }
-  .card-btn {
-    flex: 1;
-    padding: 6px;
-    border-radius: 7px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text2);
-    text-decoration: none;
-    text-align: center;
-    transition: all 0.15s;
-    display: block;
-  }
-  .card-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .card-btn.email-btn { border-color: var(--green); color: var(--green); }
+/* Grid */
+.content-area { padding: 0 20px 20px; flex: 1; }
+.creators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 12px;
+}
 
-  /* ── PAGINATION ── */
-  .pagination { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 10px 0; }
-  .page-btn {
-    padding: 6px 14px;
-    border-radius: 7px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text2);
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
-  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .page-info { font-size: 13px; color: var(--text2); }
+/* ── CREATOR CARD ────────────────────────────────────────────────────────────── */
+.creator-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--sh);
+  transition: box-shadow .15s, transform .1s, border-left-color .15s;
+}
+.creator-card:hover {
+  box-shadow: var(--sh-md);
+  transform: translateY(-2px);
+}
+.creator-card[data-platform="youtube"]   { border-left-color: var(--yt); }
+.creator-card[data-platform="twitch"]    { border-left-color: var(--tw); }
+.creator-card[data-platform="tiktok"]    { border-left-color: var(--tk); }
+.creator-card[data-platform="instagram"] { border-left-color: var(--ig); }
 
-  /* ── EMPTY STATE ── */
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty h3 { font-size: 18px; color: var(--text2); margin-bottom: 8px; }
-  .empty p { font-size: 14px; }
+/* Card header */
+.card-head { display: flex; align-items: center; gap: 11px; }
+.card-av-wrap { position: relative; width: 46px; flex-shrink: 0; }
+.card-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: #fff;
+  overflow: hidden;
+}
+.card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.card-plat-badge {
+  position: absolute;
+  bottom: -1px; right: -3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--surface);
+  display: flex; align-items: center; justify-content: center;
+}
+.card-plat-badge svg { width: 12px; height: 12px; }
+.card-info { flex: 1; min-width: 0; }
+.card-name {
+  font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--text);
+}
+.card-username { font-size: 11px; color: var(--text3); font-weight: 500; }
 
-  /* ── SCAN PANEL ── */
-  .scan-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .scan-panel h4 { font-size: 13px; font-weight: 700; color: var(--accent2); }
-  .scan-log {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    height: 140px;
-    overflow-y: auto;
-    font-size: 11px;
-    font-family: 'Consolas', monospace;
-    color: var(--text2);
-    line-height: 1.8;
-  }
-  .scan-options { display: flex; gap: 6px; flex-wrap: wrap; }
-  .scan-options select {
-    flex: 1;
-    min-width: 90px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 6px 8px;
-    color: var(--text);
-    font-size: 12px;
-    outline: none;
-  }
+/* Stats */
+.card-stats { display: flex; gap: 6px; }
+.card-stat {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: var(--r-sm);
+  padding: 6px 6px 5px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.cs-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.cs-lbl { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
 
-  /* ── LOADING ── */
-  .loading { text-align: center; padding: 60px; color: var(--text3); }
-  .spinner {
-    display: inline-block;
-    width: 32px; height: 32px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Badges */
+.card-badges { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.badge svg { width: 10px; height: 10px; }
+.badge-yt   { background: #fff0f0; color: #b91c1c; }
+.badge-tw   { background: #f5f0ff; color: #6d28d9; }
+.badge-tk   { background: #fff0f3; color: #be185d; }
+.badge-ig   { background: #fdf0f7; color: #9d174d; }
+.badge-niche { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+.badge-lang  { background: var(--accent-lt); color: var(--accent); border: 1px solid rgba(29,78,216,.15); }
+.badge-email { background: var(--green-lt); color: var(--green); }
+.badge-email svg { fill: var(--green); }
 
-  .hidden { display: none !important; }
-  a { color: inherit; text-decoration: none; }
+/* Bio */
+.card-bio {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Actions */
+.card-actions { display: flex; gap: 6px; margin-top: 2px; }
+.card-btn {
+  flex: 1;
+  padding: 7px;
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: all .12s;
+}
+.card-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.card-btn svg { width: 11px; height: 11px; }
+.card-btn-email { border-color: rgba(5,150,105,.3); color: var(--green); background: var(--green-lt); }
+.card-btn-email:hover { border-color: var(--green); background: var(--green-lt); color: var(--green); }
+
+/* ── PAGINATION ──────────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+}
+.page-btn {
+  padding: 7px 16px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .12s;
+  display: flex; align-items: center; gap: 5px;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-info { font-size: 13px; font-weight: 600; color: var(--text2); padding: 0 8px; }
+
+/* ── EMPTY / LOADING ─────────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 20px;
+  gap: 12px;
+  color: var(--text3);
+}
+.empty-state svg { width: 48px; height: 48px; opacity: .35; }
+.empty-state h3 { font-size: 17px; font-weight: 700; color: var(--text2); }
+.empty-state p { font-size: 13px; color: var(--text3); text-align: center; }
+
+.loading-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 20px; gap: 12px;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text3); font-weight: 500; }
+
+[hidden] { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">🔍 CreatorScan <span>Micro-creator discovery</span></div>
-  <div class="topbar-right">
-    <div class="stat-chip">Σύνολο: <b id="total-count">…</b></div>
-    <div class="stat-chip">Με email: <b id="email-count">…</b></div>
-    <div class="stat-chip" id="platform-chip">Platforms: <b id="platform-count">…</b></div>
+<!-- ── TOP BAR ───────────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">CreatorScan</div>
+      <div class="logo-sub">Micro-creator discovery</div>
+    </div>
   </div>
-</div>
+
+  <div class="topbar-search">
+    <span class="search-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </span>
+    <input type="text" id="search-input" placeholder="Αναζήτηση creator — όνομα, username, bio…" oninput="debounceSearch()">
+  </div>
+
+  <div class="topbar-right">
+    <div class="tstat"><b id="total-count">…</b> creators</div>
+    <div class="tstat"><b id="email-count">…</b> με email</div>
+  </div>
+</header>
 
 <div class="layout">
 
-  <!-- SIDEBAR -->
+  <!-- ── SIDEBAR ─────────────────────────────────────────────────────────────── -->
   <aside class="sidebar">
 
     <!-- Platform -->
-    <div class="filter-section">
-      <div class="filter-label">Platform</div>
-      <div class="platform-tabs" id="platform-tabs">
-        <div class="ptab active" data-val="">Όλες</div>
-        <div class="ptab" data-val="youtube">📺 YT</div>
-        <div class="ptab" data-val="twitch">🎮 TW</div>
-        <div class="ptab" data-val="tiktok">🎵 TK</div>
+    <div class="sidebar-section">
+      <div class="section-heading">Platform</div>
+      <div class="platform-btns" id="platform-tabs">
+        <button class="ptab active" data-val="">
+          <div class="ptab-icon" style="background:var(--surface2)">
+            <svg viewBox="0 0 24 24" fill="var(--text2)"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          </div>
+          Όλες τις πλατφόρμες
+          <span class="ptab-count" id="pc-all">…</span>
+        </button>
+        <button class="ptab" data-val="youtube">
+          <div class="ptab-icon">
+            <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#FF0000"/></svg>
+          </div>
+          YouTube
+          <span class="ptab-count" id="pc-youtube">…</span>
+        </button>
+        <button class="ptab" data-val="twitch">
+          <div class="ptab-icon">
+            <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" fill="#9146FF"/></svg>
+          </div>
+          Twitch
+          <span class="ptab-count" id="pc-twitch">…</span>
+        </button>
+        <button class="ptab" data-val="tiktok">
+          <div class="ptab-icon">
+            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.83 1.55V6.79a4.85 4.85 0 01-1.06-.1z" fill="#FE2C55"/></svg>
+          </div>
+          TikTok
+          <span class="ptab-count" id="pc-tiktok">…</span>
+        </button>
+        <button class="ptab" data-val="instagram">
+          <div class="ptab-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#C13584"/></svg>
+          </div>
+          Instagram
+          <span class="ptab-count" id="pc-instagram">…</span>
+        </button>
       </div>
     </div>
 
     <!-- Niche -->
-    <div class="filter-section">
-      <div class="filter-label">Niche</div>
+    <div class="sidebar-section">
+      <div class="section-heading">Niche</div>
       <div class="niche-pills" id="niche-pills">
-        <div class="npill active" data-val="">Όλες</div>
+        <button class="npill active" data-val="">Όλες</button>
       </div>
     </div>
 
-    <!-- Followers range -->
-    <div class="filter-section">
-      <div class="filter-label">Followers Range</div>
-      <div class="range-row">
-        <input class="filter-input" type="number" id="min-followers" value="2000" min="0" placeholder="Min">
-        <span class="range-sep">–</span>
-        <input class="filter-input" type="number" id="max-followers" value="100000" min="0" placeholder="Max">
+    <!-- Followers -->
+    <div class="sidebar-section">
+      <div class="section-heading">Followers</div>
+      <div class="followers-row">
+        <div class="fol-input-wrap">
+          <label>Ελάχιστο</label>
+          <input type="number" id="min-followers" value="2000" min="0" step="500">
+        </div>
+        <span class="fol-sep">–</span>
+        <div class="fol-input-wrap">
+          <label>Μέγιστο</label>
+          <input type="number" id="max-followers" value="100000" min="0" step="1000">
+        </div>
+      </div>
+      <div class="presets">
+        <button class="preset-btn" onclick="setPreset(2000,10000)">2K–10K</button>
+        <button class="preset-btn" onclick="setPreset(10000,50000)">10K–50K</button>
+        <button class="preset-btn" onclick="setPreset(50000,100000)">50K–100K</button>
       </div>
     </div>
 
     <!-- Language -->
-    <div class="filter-section">
-      <div class="filter-label">Γλώσσα</div>
-      <input class="filter-input" type="text" id="language" placeholder="π.χ. el, en, es" maxlength="5">
+    <div class="sidebar-section">
+      <div class="section-heading">Γλώσσα</div>
+      <input class="filter-input" type="text" id="language" placeholder="el, en, es, fr…" maxlength="5">
     </div>
 
     <!-- Email toggle -->
-    <div class="filter-section">
-      <div class="toggle-row" onclick="toggleEmail()">
-        <label>Μόνο με Email</label>
-        <label class="toggle">
-          <input type="checkbox" id="email-toggle">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
+    <div class="sidebar-section">
+      <label class="toggle-label" onclick="toggleEmailClick()">
+        <span class="tog-text">Μόνο με email</span>
+        <div class="toggle-switch">
+          <input type="checkbox" id="email-toggle" onclick="event.stopPropagation()">
+          <div class="tog-track"></div>
+          <div class="tog-thumb"></div>
+        </div>
+      </label>
     </div>
 
-    <!-- Apply button -->
-    <button class="btn btn-primary" onclick="applyFilters()">🔎 Εφαρμογή Φίλτρων</button>
-
-    <!-- Export CSV -->
-    <button class="btn btn-green" onclick="exportCSV()">⬇ Export CSV</button>
+    <!-- Actions -->
+    <div class="sidebar-actions">
+      <button class="btn-apply" onclick="applyFilters()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+        Εφαρμογή Φίλτρων
+      </button>
+      <button class="btn-export" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        Εξαγωγή CSV
+      </button>
+    </div>
 
     <!-- Scan panel -->
-    <div class="scan-panel">
-      <h4>🚀 Νέο Scan</h4>
+    <div class="sidebar-section">
+      <div class="section-heading">Νέο Scan</div>
       <div class="scan-options">
-        <select id="scan-platform">
+        <select id="scan-platform" class="scan-select">
           <option value="youtube">YouTube</option>
           <option value="twitch">Twitch</option>
-          <option value="all">Και τα δύο</option>
+          <option value="tiktok">TikTok</option>
+          <option value="instagram">Instagram</option>
+          <option value="all">Όλες</option>
         </select>
-        <select id="scan-niche">
+        <select id="scan-niche" class="scan-select">
           <option value="Gaming">Gaming</option>
         </select>
       </div>
-      <div class="scan-log" id="scan-log">Εδώ θα εμφανιστεί η πρόοδος του scan...</div>
-      <button class="btn btn-primary" id="scan-btn" onclick="startScan()">▶ Ξεκίνα Scan</button>
+      <div class="scan-log" id="scan-log">Εδώ εμφανίζεται η πρόοδος…</div>
+      <button class="btn-scan" id="scan-btn" onclick="startScan()">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Εκκίνηση Scan
+      </button>
     </div>
 
   </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- ── MAIN AREA ──────────────────────────────────────────────────────────── -->
   <main class="main">
 
-    <!-- Search -->
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="Αναζήτηση creator (όνομα, username, bio)…" oninput="debounceSearch()">
+    <!-- Platform stats -->
+    <div class="stats-row">
+      <div class="pstat pstat-all">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-total">…</div>
+          <div class="pstat-label">Σύνολο</div>
+        </div>
       </div>
-      <div class="result-count" id="result-count">– creators</div>
+      <div class="pstat pstat-email">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-email">…</div>
+          <div class="pstat-label">Με Email</div>
+        </div>
+      </div>
+      <div class="pstat pstat-yt">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#FF0000"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-youtube">…</div>
+          <div class="pstat-label">YouTube</div>
+        </div>
+      </div>
+      <div class="pstat pstat-tw">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" fill="#9146FF"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-twitch">…</div>
+          <div class="pstat-label">Twitch</div>
+        </div>
+      </div>
+      <div class="pstat pstat-tk">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.83 1.55V6.79a4.85 4.85 0 01-1.06-.1z" fill="#FE2C55"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-tiktok">…</div>
+          <div class="pstat-label">TikTok</div>
+        </div>
+      </div>
+      <div class="pstat pstat-ig">
+        <div class="pstat-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#C13584"/></svg>
+        </div>
+        <div>
+          <div class="pstat-num" id="s-instagram">…</div>
+          <div class="pstat-label">Instagram</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Stats bar -->
-    <div class="stats-bar" id="stats-bar">
-      <div class="stat-card">
-        <div class="sc-label">Σύνολο Creators</div>
-        <div class="sc-value" id="s-total">…</div>
-        <div class="sc-sub">στη βάση δεδομένων</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">Με Email</div>
-        <div class="sc-value" id="s-email">…</div>
-        <div class="sc-sub">έτοιμοι για outreach</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">YouTube</div>
-        <div class="sc-value" id="s-youtube">…</div>
-        <div class="sc-sub">channels</div>
-      </div>
-      <div class="stat-card">
-        <div class="sc-label">Twitch</div>
-        <div class="sc-value" id="s-twitch">…</div>
-        <div class="sc-sub">streamers</div>
-      </div>
+    <!-- Toolbar -->
+    <div class="grid-toolbar">
+      <div class="result-count"><b id="result-count">…</b> creators βρέθηκαν</div>
     </div>
 
-    <!-- Grid -->
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <div>Φόρτωση creators…</div>
-    </div>
-    <div id="creators-grid" class="creators-grid hidden"></div>
-    <div id="empty-state" class="empty hidden">
-      <div class="empty-icon">🔍</div>
-      <h3>Δεν βρέθηκαν creators</h3>
-      <p>Δοκίμασε διαφορετικά φίλτρα ή τρέξε ένα νέο Scan από το sidebar.</p>
+    <!-- Grid / States -->
+    <div class="content-area">
+      <div id="loading-state" class="loading-state">
+        <div class="spinner"></div>
+        <div class="loading-text">Φόρτωση creators…</div>
+      </div>
+      <div id="creators-grid" class="creators-grid" hidden></div>
+      <div id="empty-state" class="empty-state" hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <h3>Δεν βρέθηκαν creators</h3>
+        <p>Δοκίμασε διαφορετικά φίλτρα ή τρέξε ένα νέο scan από το sidebar.</p>
+      </div>
     </div>
 
     <!-- Pagination -->
-    <div class="pagination" id="pagination">
-      <button class="page-btn" id="prev-btn" onclick="prevPage()" disabled>← Προηγούμενη</button>
+    <div class="pagination" id="pagination" hidden>
+      <button class="page-btn" id="prev-btn" onclick="prevPage()" disabled>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
+        Προηγούμενη
+      </button>
       <span class="page-info" id="page-info">Σελίδα 1</span>
-      <button class="page-btn" id="next-btn" onclick="nextPage()">Επόμενη →</button>
+      <button class="page-btn" id="next-btn" onclick="nextPage()">
+        Επόμενη
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </button>
     </div>
 
   </main>
 </div>
 
+<!-- ── PLATFORM SVG HELPERS (used in JS) ─────────────────────────────────── -->
+<svg id="svg-defs" hidden>
+  <defs>
+    <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f09433"/>
+      <stop offset="25%" style="stop-color:#e6683c"/>
+      <stop offset="50%" style="stop-color:#dc2743"/>
+      <stop offset="75%" style="stop-color:#cc2366"/>
+      <stop offset="100%" style="stop-color:#bc1888"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
-const state = {
-  platform: '',
-  niche: '',
-  min: 2000,
-  max: 100000,
-  email: false,
-  language: '',
-  search: '',
-  offset: 0,
-  limit: 48,
-  total: 0,
+// ── Platform config ────────────────────────────────────────────────────────────
+const PLATFORM = {
+  youtube:   { label: 'YouTube',   color: '#FF0000', badgeCls: 'badge-yt', svg: '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#FF0000"/></svg>' },
+  twitch:    { label: 'Twitch',    color: '#9146FF', badgeCls: 'badge-tw', svg: '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" fill="#9146FF"/></svg>' },
+  tiktok:    { label: 'TikTok',    color: '#FE2C55', badgeCls: 'badge-tk', svg: '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.27 8.27 0 004.83 1.55V6.79a4.85 4.85 0 01-1.06-.1z" fill="#FE2C55"/></svg>' },
+  instagram: { label: 'Instagram', color: '#C13584', badgeCls: 'badge-ig', svg: '<svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="#C13584"/></svg>' },
 };
 
-let searchTimer = null;
-let scanTimer = null;
+// ── State ──────────────────────────────────────────────────────────────────────
+const state = {
+  platform: '', niche: '',
+  min: 2000, max: 100000,
+  email: false, language: '',
+  search: '', offset: 0, limit: 48, total: 0,
+};
+let searchTimer = null, scanTimer = null;
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────────────────────────
 async function init() {
   await Promise.all([loadStats(), loadNiches()]);
   await loadCreators();
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// ── Stats ──────────────────────────────────────────────────────────────────────
 async function loadStats() {
   const s = await fetch('/api/stats').then(r => r.json());
-  document.getElementById('total-count').textContent = s.total.toLocaleString();
-  document.getElementById('email-count').textContent = s.with_email.toLocaleString();
-  document.getElementById('platform-count').textContent = Object.keys(s.by_platform).length;
-  document.getElementById('s-total').textContent = s.total.toLocaleString();
-  document.getElementById('s-email').textContent = s.with_email.toLocaleString();
-  document.getElementById('s-youtube').textContent = (s.by_platform.youtube || 0).toLocaleString();
-  document.getElementById('s-twitch').textContent = (s.by_platform.twitch || 0).toLocaleString();
+  document.getElementById('total-count').textContent = fmt(s.total);
+  document.getElementById('email-count').textContent = fmt(s.with_email);
+  document.getElementById('s-total').textContent = fmt(s.total);
+  document.getElementById('s-email').textContent = fmt(s.with_email);
+  document.getElementById('s-youtube').textContent = fmt(s.by_platform.youtube || 0);
+  document.getElementById('s-twitch').textContent = fmt(s.by_platform.twitch || 0);
+  document.getElementById('s-tiktok').textContent = fmt(s.by_platform.tiktok || 0);
+  document.getElementById('s-instagram').textContent = fmt(s.by_platform.instagram || 0);
+  // Platform tab counts
+  const total = s.total;
+  document.getElementById('pc-all').textContent = fmt(total);
+  document.getElementById('pc-youtube').textContent = fmt(s.by_platform.youtube || 0);
+  document.getElementById('pc-twitch').textContent = fmt(s.by_platform.twitch || 0);
+  document.getElementById('pc-tiktok').textContent = fmt(s.by_platform.tiktok || 0);
+  document.getElementById('pc-instagram').textContent = fmt(s.by_platform.instagram || 0);
 }
 
-// ── Niches ────────────────────────────────────────────────────────────────────
+// ── Niches ─────────────────────────────────────────────────────────────────────
 async function loadNiches() {
   const { niches } = await fetch('/api/niches').then(r => r.json());
   const pills = document.getElementById('niche-pills');
-  const scanSelect = document.getElementById('scan-niche');
+  const scanSel = document.getElementById('scan-niche');
   niches.forEach(n => {
-    const el = document.createElement('div');
-    el.className = 'npill';
-    el.dataset.val = n;
-    el.textContent = n;
-    el.onclick = () => selectNiche(el);
-    pills.appendChild(el);
-
+    const btn = document.createElement('button');
+    btn.className = 'npill'; btn.dataset.val = n; btn.textContent = n;
+    btn.onclick = () => selectNiche(btn);
+    pills.appendChild(btn);
     const opt = document.createElement('option');
     opt.value = n; opt.textContent = n;
-    scanSelect.appendChild(opt);
+    scanSel.appendChild(opt);
   });
 }
-
 function selectNiche(el) {
   document.querySelectorAll('.npill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
@@ -608,7 +999,7 @@ function selectNiche(el) {
   loadCreators();
 }
 
-// ── Platform tabs ─────────────────────────────────────────────────────────────
+// ── Platform tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll('.ptab').forEach(tab => {
   tab.onclick = () => {
     document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
@@ -619,13 +1010,19 @@ document.querySelectorAll('.ptab').forEach(tab => {
   };
 });
 
-// ── Filters ───────────────────────────────────────────────────────────────────
-function toggleEmail() {
+// ── Filters ────────────────────────────────────────────────────────────────────
+function toggleEmailClick() {
   const cb = document.getElementById('email-toggle');
   cb.checked = !cb.checked;
   state.email = cb.checked;
 }
-
+function setPreset(min, max) {
+  document.getElementById('min-followers').value = min;
+  document.getElementById('max-followers').value = max;
+  state.min = min; state.max = max;
+  state.offset = 0;
+  loadCreators();
+}
 function applyFilters() {
   state.min = parseInt(document.getElementById('min-followers').value) || 2000;
   state.max = parseInt(document.getElementById('max-followers').value) || 100000;
@@ -634,7 +1031,6 @@ function applyFilters() {
   state.offset = 0;
   loadCreators();
 }
-
 function debounceSearch() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => {
@@ -644,83 +1040,85 @@ function debounceSearch() {
   }, 350);
 }
 
-// ── Load creators ─────────────────────────────────────────────────────────────
+// ── Load creators ──────────────────────────────────────────────────────────────
 async function loadCreators() {
-  document.getElementById('loading').classList.remove('hidden');
-  document.getElementById('creators-grid').classList.add('hidden');
-  document.getElementById('empty-state').classList.add('hidden');
+  show('loading-state'); hide('creators-grid'); hide('empty-state'); hide('pagination');
 
   const params = new URLSearchParams({
-    limit:         state.limit,
-    offset:        state.offset,
-    min_followers: state.min,
-    max_followers: state.max,
+    limit: state.limit, offset: state.offset,
+    min_followers: state.min, max_followers: state.max,
   });
-  if (state.platform)  params.set('platform', state.platform);
-  if (state.niche)     params.set('niche', state.niche);
-  if (state.email)     params.set('has_email', 'true');
-  if (state.language)  params.set('language', state.language);
-  if (state.search)    params.set('search', state.search);
+  if (state.platform) params.set('platform', state.platform);
+  if (state.niche)    params.set('niche', state.niche);
+  if (state.email)    params.set('has_email', 'true');
+  if (state.language) params.set('language', state.language);
+  if (state.search)   params.set('search', state.search);
 
   const data = await fetch('/api/creators?' + params).then(r => r.json());
   state.total = data.total;
 
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('result-count').textContent = `${data.total.toLocaleString()} creators`;
+  hide('loading-state');
+  document.getElementById('result-count').textContent = fmt(data.total);
 
-  if (!data.creators.length) {
-    document.getElementById('empty-state').classList.remove('hidden');
-    document.getElementById('pagination').style.display = 'none';
-    return;
-  }
+  if (!data.creators.length) { show('empty-state'); return; }
 
   const grid = document.getElementById('creators-grid');
   grid.innerHTML = '';
   data.creators.forEach(c => grid.appendChild(creatorCard(c)));
-  grid.classList.remove('hidden');
+  show('creators-grid');
 
-  // Pagination
   const totalPages = Math.ceil(state.total / state.limit);
   const curPage = Math.floor(state.offset / state.limit) + 1;
   document.getElementById('page-info').textContent = `Σελίδα ${curPage} / ${totalPages}`;
   document.getElementById('prev-btn').disabled = state.offset === 0;
   document.getElementById('next-btn').disabled = state.offset + state.limit >= state.total;
-  document.getElementById('pagination').style.display = 'flex';
+  show('pagination');
 }
 
-// ── Creator card ──────────────────────────────────────────────────────────────
+// ── Creator card ───────────────────────────────────────────────────────────────
 function fmtNum(n) {
-  if (!n && n !== 0) return '—';
+  if (n == null || n === '') return '—';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
   if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-  return n.toString();
+  return String(n);
 }
+function fmt(n) { return Number(n).toLocaleString(); }
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function show(id) { document.getElementById(id).hidden = false; }
+function hide(id) { document.getElementById(id).hidden = true; }
 
 function creatorCard(c) {
   const el = document.createElement('div');
   el.className = 'creator-card';
+  el.dataset.platform = c.platform;
 
+  const p = PLATFORM[c.platform] || { label: c.platform, color: '#64748b', badgeCls: 'badge-niche', svg: '' };
   const initials = (c.display_name || c.username || '?')[0].toUpperCase();
-  const avatarHtml = c.avatar_url
-    ? `<img src="${c.avatar_url}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${initials}'">`
+  const avatarContent = c.avatar_url
+    ? `<img src="${esc(c.avatar_url)}" alt="" loading="lazy" onerror="this.parentNode.textContent='${initials}'">`
     : initials;
 
-  const platformClass = `badge-platform-${c.platform}`;
-  const platformLabel = {youtube:'▶ YouTube', twitch:'🎮 Twitch', tiktok:'🎵 TikTok', instagram:'📸 Instagram'}[c.platform] || c.platform;
-
-  const emailBadge = c.has_email ? `<span class="badge badge-email">✉ Email</span>` : '';
-  const nicheBadge = c.niche ? `<span class="badge badge-niche">${c.niche}</span>` : '';
-  const langBadge = c.language ? `<span class="badge badge-niche">${c.language.toUpperCase()}</span>` : '';
+  const nicheBadge = c.niche ? `<span class="badge badge-niche">${esc(c.niche)}</span>` : '';
+  const langBadge  = c.language ? `<span class="badge badge-lang">${esc(c.language.toUpperCase())}</span>` : '';
+  const emailBadge = c.has_email ? `<span class="badge badge-email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Email</span>` : '';
 
   const emailBtn = c.email
-    ? `<a href="mailto:${c.email}" class="card-btn email-btn">✉ ${c.email.substring(0,22)}</a>`
+    ? `<a href="mailto:${esc(c.email)}" class="card-btn card-btn-email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>${esc(c.email.substring(0,22))}</a>`
     : '';
 
+  const engRate = c.engagement_rate ? `<span style="font-size:10px;color:var(--text3);font-weight:600">${c.engagement_rate}% ER</span>` : '';
+
   el.innerHTML = `
-    <div class="card-top">
-      <div class="card-avatar">${avatarHtml}</div>
-      <div>
-        <div class="card-name">${escHtml(c.display_name || c.username)}</div>
-        <div class="card-username">@${escHtml(c.username)}</div>
+    <div class="card-head">
+      <div class="card-av-wrap">
+        <div class="card-avatar">${avatarContent}</div>
+        <div class="card-plat-badge">${p.svg}</div>
+      </div>
+      <div class="card-info">
+        <div class="card-name">${esc(c.display_name || c.username)}</div>
+        <div class="card-username">@${esc(c.username)}</div>
       </div>
     </div>
     <div class="card-stats">
@@ -738,72 +1136,58 @@ function creatorCard(c) {
       </div>
     </div>
     <div class="card-badges">
-      <span class="badge ${platformClass}">${platformLabel}</span>
+      <span class="badge ${p.badgeCls}">${p.svg}${p.label}</span>
       ${nicheBadge}${langBadge}${emailBadge}
     </div>
-    ${c.bio ? `<div class="card-bio">${escHtml(c.bio)}</div>` : ''}
+    ${c.bio ? `<div class="card-bio">${esc(c.bio)}</div>` : ''}
     <div class="card-actions">
-      <a href="${c.profile_url}" target="_blank" class="card-btn">🔗 Άνοιγμα</a>
+      <a href="${esc(c.profile_url)}" target="_blank" rel="noopener" class="card-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Άνοιγμα
+      </a>
       ${emailBtn}
-    </div>
-  `;
+    </div>`;
   return el;
 }
 
-function escHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ── Pagination ─────────────────────────────────────────────────────────────────
+function prevPage() { state.offset = Math.max(0, state.offset - state.limit); loadCreators(); scrollTo(0,0); }
+function nextPage() { state.offset += state.limit; loadCreators(); scrollTo(0,0); }
 
-// ── Pagination ────────────────────────────────────────────────────────────────
-function prevPage() {
-  state.offset = Math.max(0, state.offset - state.limit);
-  loadCreators();
-  window.scrollTo(0, 0);
-}
-function nextPage() {
-  state.offset += state.limit;
-  loadCreators();
-  window.scrollTo(0, 0);
-}
-
-// ── Export CSV ────────────────────────────────────────────────────────────────
+// ── Export ─────────────────────────────────────────────────────────────────────
 function exportCSV() {
-  const params = new URLSearchParams({ min_followers: state.min, max_followers: state.max });
-  if (state.platform) params.set('platform', state.platform);
-  if (state.niche)    params.set('niche', state.niche);
-  if (state.email)    params.set('has_email', 'true');
-  window.location.href = '/api/export/csv?' + params;
+  const p = new URLSearchParams({ min_followers: state.min, max_followers: state.max });
+  if (state.platform) p.set('platform', state.platform);
+  if (state.niche)    p.set('niche', state.niche);
+  if (state.email)    p.set('has_email', 'true');
+  window.location.href = '/api/export/csv?' + p;
 }
 
-// ── Scan ──────────────────────────────────────────────────────────────────────
+// ── Scan ───────────────────────────────────────────────────────────────────────
 async function startScan() {
   const btn = document.getElementById('scan-btn');
   const log = document.getElementById('scan-log');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></div> Σε εξέλιξη…';
+  log.textContent = 'Εκκίνηση scan…\n';
   const platform = document.getElementById('scan-platform').value;
   const niche    = document.getElementById('scan-niche').value;
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Σε εξέλιξη…';
-  log.textContent = 'Ξεκινάει scan…\n';
-
   await fetch(`/api/scan/start?platform=${platform}&niche=${niche}`, { method: 'POST' });
-
   scanTimer = setInterval(async () => {
-    const status = await fetch('/api/scan/status').then(r => r.json());
-    log.textContent = status.log.join('\n');
+    const s = await fetch('/api/scan/status').then(r => r.json());
+    log.textContent = s.log.join('\n');
     log.scrollTop = log.scrollHeight;
-
-    if (!status.running) {
+    if (!s.running) {
       clearInterval(scanTimer);
       btn.disabled = false;
-      btn.textContent = '▶ Ξεκίνα Scan';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Εκκίνηση Scan';
       await loadStats();
       await loadCreators();
     }
   }, 1500);
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+// ── Boot ───────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
