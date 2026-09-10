@@ -48,6 +48,24 @@ def get_twitch_collector():
     return TwitchCollector(cid, sec)
 
 
+def get_tiktok_collector():
+    try:
+        from collectors.tiktok import TikTokCollector
+        return TikTokCollector(headless=True)
+    except ImportError as e:
+        console.print(f"[red]❌ {e}[/red]")
+        return None
+
+
+def get_instagram_collector():
+    try:
+        from collectors.instagram import InstagramCollector
+        return InstagramCollector(headless=True)
+    except ImportError as e:
+        console.print(f"[red]❌ {e}[/red]")
+        return None
+
+
 # ── Commands ─────────────────────────────────────────────────────────────────
 
 def cmd_scan(args):
@@ -65,7 +83,7 @@ def cmd_scan(args):
 
     niches_to_scan = valid_niches if args.niche == "all" else [args.niche]
     platforms_to_scan = (
-        ["youtube", "twitch"] if args.platform == "all"
+        ["youtube", "twitch", "tiktok", "instagram"] if args.platform == "all"
         else [args.platform]
     )
 
@@ -105,6 +123,26 @@ def cmd_scan(args):
                     min_followers=args.min,
                     max_followers=args.max,
                     max_per_category=args.max_per_query,
+                )
+            elif platform == "tiktok":
+                collector = get_tiktok_collector()
+                if not collector:
+                    continue
+                gen = collector.scan_niche(
+                    niche,
+                    min_followers=args.min,
+                    max_followers=args.max,
+                    max_per_query=args.max_per_query,
+                )
+            elif platform == "instagram":
+                collector = get_instagram_collector()
+                if not collector:
+                    continue
+                gen = collector.scan_niche(
+                    niche,
+                    min_followers=args.min,
+                    max_followers=args.max,
+                    max_per_query=args.max_per_query,
                 )
             else:
                 console.print(f"[yellow]⚠ Platform '{platform}' δεν υποστηρίζεται ακόμα[/yellow]")
@@ -268,7 +306,7 @@ def build_parser():
     # ── scan ──
     sp = sub.add_parser("scan", help="Σκανάρισε creators από platforms")
     sp.add_argument("--platform", default="youtube",
-                    choices=["youtube", "twitch", "all"],
+                    choices=["youtube", "twitch", "tiktok", "instagram", "all"],
                     help="Platform (default: youtube)")
     sp.add_argument("--niche", default="Gaming",
                     help="Niche category ή 'all' (default: Gaming)")

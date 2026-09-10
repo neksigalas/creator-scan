@@ -87,6 +87,40 @@ def _run_scan(platform: str, niche: str, min_f: int, max_f: int):
             else:
                 scan_state["log"].append("⚠ Twitch credentials δεν έχουν οριστεί")
 
+        if platform in ("tiktok", "all"):
+            try:
+                from collectors.tiktok import TikTokCollector
+                tt = TikTokCollector(headless=True)
+                niches = list(NICHE_KEYWORDS.keys()) if niche == "all" else [niche]
+                for n in niches:
+                    scan_state["log"].append(f"🎵 TikTok · {n}...")
+                    for creator in tt.scan_niche(n, min_followers=min_f, max_followers=max_f):
+                        is_new = db.upsert_creator(creator)
+                        if is_new:
+                            scan_state["found"] += 1
+                            scan_state["log"].append(
+                                f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
+                            )
+            except ImportError:
+                scan_state["log"].append("⚠ Playwright δεν είναι installed (pip install playwright && playwright install chromium)")
+
+        if platform in ("instagram", "all"):
+            try:
+                from collectors.instagram import InstagramCollector
+                ig = InstagramCollector(headless=True)
+                niches = list(NICHE_KEYWORDS.keys()) if niche == "all" else [niche]
+                for n in niches:
+                    scan_state["log"].append(f"📸 Instagram · {n}...")
+                    for creator in ig.scan_niche(n, min_followers=min_f, max_followers=max_f):
+                        is_new = db.upsert_creator(creator)
+                        if is_new:
+                            scan_state["found"] += 1
+                            scan_state["log"].append(
+                                f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
+                            )
+            except ImportError:
+                scan_state["log"].append("⚠ Playwright δεν είναι installed (pip install playwright && playwright install chromium)")
+
     except Exception as e:
         scan_state["log"].append(f"❌ Error: {e}")
     finally:
@@ -180,7 +214,7 @@ async def api_export_csv(
 
 @app.post("/api/scan/start")
 async def api_scan_start(
-    platform:     str = "youtube",
+    platform:     str = "youtube",   # youtube | twitch | tiktok | instagram | all
     niche:        str = "Gaming",
     min_followers: int = 2_000,
     max_followers: int = 100_000,
