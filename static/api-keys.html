@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorScan — API Keys</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d1a; --surface: #14142b; --surface2: #1e1e3f;
+    --border: #2a2a4a; --accent: #7c3aed; --accent2: #a855f7;
+    --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --blue: #3b82f6;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 20px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 18px; font-weight: 800; color: var(--accent2); }
+  .nav-link { font-size: 13px; color: var(--text2); text-decoration: none; padding: 6px 12px; border-radius: 7px; transition: all 0.15s; }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+  .nav-link.active { background: var(--accent); color: #fff; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 20px; display: flex; flex-direction: column; gap: 28px; }
+
+  h1 { font-size: 24px; font-weight: 800; }
+  h1 span { color: var(--accent2); }
+  .subtitle { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  /* Tiers */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .tier-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 20px; text-align: center;
+  }
+  .tier-card.pro { border-color: var(--accent); }
+  .tier-card .tier-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 6px; }
+  .tier-card .tier-price { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .tier-card .tier-limit { font-size: 13px; color: var(--accent2); font-weight: 600; margin-bottom: 12px; }
+  .tier-card ul { list-style: none; text-align: left; }
+  .tier-card ul li { font-size: 12px; color: var(--text2); padding: 3px 0; }
+  .tier-card ul li::before { content: '✓ '; color: var(--green); }
+
+  /* Create key form */
+  .create-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+  }
+  .create-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+  .form-group label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+  .form-group input, .form-group select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; color: var(--text);
+    font-size: 13px; outline: none; transition: border-color 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; font-size: 13px;
+    font-weight: 700; cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-danger { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 5px 12px; font-size: 11px; }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+
+  /* New key reveal */
+  .new-key-box {
+    background: #0a2a1a; border: 1.5px solid var(--green);
+    border-radius: 10px; padding: 16px 20px; margin-top: 16px;
+    display: none;
+  }
+  .new-key-box .label { font-size: 11px; color: var(--green); font-weight: 700; margin-bottom: 8px; }
+  .new-key-box .key-value {
+    font-family: 'Consolas', monospace; font-size: 14px;
+    color: #4ade80; word-break: break-all; cursor: pointer;
+    background: #051a0e; border-radius: 6px; padding: 10px 14px;
+    border: 1px solid #1a4a2e;
+  }
+  .new-key-box .warn { font-size: 11px; color: var(--text3); margin-top: 8px; }
+
+  /* Keys table */
+  .keys-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .keys-box h2 { font-size: 16px; font-weight: 700; padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .keys-table { width: 100%; border-collapse: collapse; }
+  .keys-table th {
+    text-align: left; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text3); padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .keys-table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .keys-table tr:last-child td { border-bottom: none; }
+  .keys-table tr:hover td { background: var(--surface2); }
+  .key-code { font-family: 'Consolas', monospace; font-size: 12px; color: var(--accent2); cursor: pointer; }
+  .tier-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+  }
+  .tier-free { background: #1e293b; color: var(--text2); }
+  .tier-pro { background: #2e1065; color: #c4b5fd; }
+  .tier-unlimited { background: #052e16; color: #4ade80; }
+  .status-active { color: var(--green); font-weight: 600; }
+  .status-revoked { color: var(--text3); }
+  .calls-bar { display: flex; align-items: center; gap: 8px; }
+  .bar-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; max-width: 80px; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.3s; }
+  .empty-keys { text-align: center; padding: 40px; color: var(--text3); font-size: 14px; }
+
+  /* API Explorer */
+  .explorer { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .explorer h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .endpoint-list { display: flex; flex-direction: column; gap: 10px; }
+  .endpoint {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .method {
+    padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 800;
+    font-family: monospace; flex-shrink: 0; margin-top: 1px;
+  }
+  .get { background: #1e3a5f; color: #60a5fa; }
+  .post { background: #1a3a2a; color: #4ade80; }
+  .endpoint-info { flex: 1; }
+  .endpoint-path { font-family: 'Consolas', monospace; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .endpoint-desc { font-size: 12px; color: var(--text2); }
+  .endpoint-params { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .endpoint-params code { background: var(--bg); border-radius: 3px; padding: 1px 5px; color: var(--accent2); }
+
+  /* Code example */
+  .code-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-top: 16px;
+  }
+  .code-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .ctab {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); color: var(--text2);
+    background: transparent; transition: all 0.15s;
+  }
+  .ctab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  pre {
+    font-family: 'Consolas', monospace; font-size: 12px;
+    color: #94a3b8; line-height: 1.7; white-space: pre-wrap; word-break: break-all;
+  }
+  pre .kw { color: #c4b5fd; } pre .str { color: #86efac; }
+  pre .cm { color: #475569; } pre .num { color: #fbbf24; }
+
+  .copy-btn { float: right; font-size: 11px; padding: 3px 10px; }
+
+  @media (max-width: 640px) { .tiers { grid-template-columns: 1fr; } .form-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">🔍 CreatorScan</div>
+  <a class="nav-link" href="/">Dashboard</a>
+  <a class="nav-link active" href="/api-keys">API Keys</a>
+  <a class="nav-link" href="/docs" target="_blank">Swagger Docs ↗</a>
+</div>
+
+<div class="container">
+
+  <div>
+    <h1>🔑 API Keys <span>& Integration</span></h1>
+    <p class="subtitle">Δημιούργησε API keys και χρησιμοποίησε το CreatorScan μέσα στο AI σου ή οποιοδήποτε tool.</p>
+  </div>
+
+  <!-- Tiers -->
+  <div class="tiers">
+    <div class="tier-card">
+      <div class="tier-name">Free</div>
+      <div class="tier-price">€0</div>
+      <div class="tier-limit">100 calls / day</div>
+      <ul>
+        <li>Όλα τα endpoints</li>
+        <li>20 results ανά call</li>
+        <li>Όλες οι niches</li>
+        <li>Βασικά φίλτρα</li>
+      </ul>
+    </div>
+    <div class="tier-card pro">
+      <div class="tier-name">Pro</div>
+      <div class="tier-price">€29<small style="font-size:14px">/mo</small></div>
+      <div class="tier-limit">5,000 calls / day</div>
+      <ul>
+        <li>200 results ανά call</li>
+        <li>Email field included</li>
+        <li>Priority support</li>
+        <li>Webhook notifications</li>
+      </ul>
+    </div>
+    <div class="tier-card">
+      <div class="tier-name">Unlimited</div>
+      <div class="tier-price">€99<small style="font-size:14px">/mo</small></div>
+      <div class="tier-limit">Απεριόριστο</div>
+      <ul>
+        <li>White-label</li>
+        <li>Custom niches</li>
+        <li>On-premise option</li>
+        <li>SLA 99.9%</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Create key -->
+  <div class="create-box">
+    <h2>➕ Δημιουργία νέου API Key</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Όνομα Key</label>
+        <input type="text" id="key-name" placeholder="π.χ. My AI Agent, Testing, Production">
+      </div>
+      <div class="form-group" style="max-width:140px;">
+        <label>Tier</label>
+        <select id="key-tier">
+          <option value="free">Free (100/day)</option>
+          <option value="pro">Pro (5000/day)</option>
+          <option value="unlimited">Unlimited</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="createKey()" style="height:42px;margin-bottom:1px;">Δημιουργία ↵</button>
+    </div>
+
+    <div class="new-key-box" id="new-key-box">
+      <div class="label">✅ Νέο API Key — Αντέγραψέ το τώρα, δεν θα ξαναφανεί!</div>
+      <div class="key-value" id="new-key-value" onclick="copyKey(this)" title="Κλικ για αντιγραφή"></div>
+      <div class="warn">⚠ Αποθήκευσέ το σε ασφαλές μέρος. Χρησιμοποίησέ το στο <code>X-API-Key</code> header.</div>
+    </div>
+  </div>
+
+  <!-- Keys list -->
+  <div class="keys-box">
+    <h2>🗝 Τα API Keys σου</h2>
+    <div id="keys-list">
+      <div class="empty-keys">Φόρτωση…</div>
+    </div>
+  </div>
+
+  <!-- API Explorer -->
+  <div class="explorer">
+    <h2>📡 API Reference</h2>
+    <div class="endpoint-list">
+
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/v1/creators</div>
+          <div class="endpoint-desc">Αναζήτηση creators με φίλτρα</div>
+          <div class="endpoint-params">
+            <code>platform</code> youtube|twitch &nbsp;
+            <code>niche</code> Gaming|Fitness|… &nbsp;
+            <code>min_followers</code> <code>max_followers</code> &nbsp;
+            <code>has_email</code> true|false &nbsp;
+            <code>language</code> en|el|… &nbsp;
+            <code>search</code> keyword &nbsp;
+            <code>limit</code> max 200 &nbsp;
+            <code>offset</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/v1/stats</div>
+          <div class="endpoint-desc">Στατιστικά της database (totals, by platform, by niche)</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/v1/niches</div>
+          <div class="endpoint-desc">Λίστα με όλες τις διαθέσιμες niches</div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/scan/start</div>
+          <div class="endpoint-desc">Ξεκίνα scan για νέους creators (background task)</div>
+          <div class="endpoint-params"><code>platform</code> <code>niche</code> <code>min_followers</code> <code>max_followers</code></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Code examples -->
+    <div class="code-box">
+      <div class="code-tabs">
+        <button class="ctab active" onclick="showCode('python', this)">Python</button>
+        <button class="ctab" onclick="showCode('curl', this)">cURL</button>
+        <button class="ctab" onclick="showCode('js', this)">JavaScript</button>
+        <button class="ctab" onclick="showCode('claude', this)">Claude Tool</button>
+      </div>
+
+      <pre id="code-python"><span class="kw">import</span> requests
+
+API_KEY = <span class="str">"cs_your_key_here"</span>
+BASE    = <span class="str">"http://localhost:8000"</span>
+
+<span class="cm"># Βρες Gaming creators στο YouTube με 5K-50K followers</span>
+resp = requests.get(
+    f<span class="str">"{BASE}/v1/creators"</span>,
+    headers={<span class="str">"X-API-Key"</span>: API_KEY},
+    params={
+        <span class="str">"platform"</span>:      <span class="str">"youtube"</span>,
+        <span class="str">"niche"</span>:         <span class="str">"Gaming"</span>,
+        <span class="str">"min_followers"</span>:  <span class="num">5000</span>,
+        <span class="str">"max_followers"</span>:  <span class="num">50000</span>,
+        <span class="str">"has_email"</span>:      <span class="str">"true"</span>,
+        <span class="str">"limit"</span>:          <span class="num">20</span>,
+    }
+)
+data = resp.json()
+<span class="kw">print</span>(f<span class="str">"Βρέθηκαν {data['total']} creators"</span>)
+<span class="kw">for</span> c <span class="kw">in</span> data[<span class="str">"data"</span>]:
+    <span class="kw">print</span>(f<span class="str">"{c['display_name']} — {c['followers']:,} followers — {c['email']}"</span>)</pre>
+
+      <pre id="code-curl" style="display:none"><span class="cm"># Βρες Fitness creators στο Twitch</span>
+curl -X GET <span class="str">"http://localhost:8000/v1/creators?platform=twitch&niche=Fitness&limit=20"</span> \
+  -H <span class="str">"X-API-Key: cs_your_key_here"</span>
+
+<span class="cm"># Στατιστικά</span>
+curl <span class="str">"http://localhost:8000/v1/stats"</span> \
+  -H <span class="str">"X-API-Key: cs_your_key_here"</span></pre>
+
+      <pre id="code-js" style="display:none"><span class="kw">const</span> API_KEY = <span class="str">"cs_your_key_here"</span>;
+<span class="kw">const</span> BASE    = <span class="str">"http://localhost:8000"</span>;
+
+<span class="cm">// Βρες Tech creators με email</span>
+<span class="kw">const</span> resp = <span class="kw">await</span> fetch(
+  `${BASE}/v1/creators?niche=Tech&has_email=true&limit=50`,
+  { headers: { <span class="str">"X-API-Key"</span>: API_KEY } }
+);
+<span class="kw">const</span> { data, total } = <span class="kw">await</span> resp.json();
+console.log(<span class="str">`${total} creators found`</span>, data);</pre>
+
+      <pre id="code-claude" style="display:none"><span class="cm"># Claude Tool Definition (MCP / Function calling)</span>
+{
+  <span class="str">"name"</span>: <span class="str">"search_creators"</span>,
+  <span class="str">"description"</span>: <span class="str">"Search micro-creators (2K-100K followers) by niche and platform"</span>,
+  <span class="str">"input_schema"</span>: {
+    <span class="str">"type"</span>: <span class="str">"object"</span>,
+    <span class="str">"properties"</span>: {
+      <span class="str">"niche"</span>:     { <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"description"</span>: <span class="str">"Gaming|Fitness|Tech|Beauty|Food|Travel|Finance|Education|Fashion|Music"</span> },
+      <span class="str">"platform"</span>:  { <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"description"</span>: <span class="str">"youtube|twitch"</span> },
+      <span class="str">"has_email"</span>: { <span class="str">"type"</span>: <span class="str">"boolean"</span> },
+      <span class="str">"min_followers"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"default"</span>: <span class="num">2000</span> },
+      <span class="str">"max_followers"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"default"</span>: <span class="num">100000</span> },
+      <span class="str">"limit"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"default"</span>: <span class="num">20</span> }
+    }
+  }
+}
+
+<span class="cm"># API call:</span>
+GET http://localhost:8000/v1/creators?niche={niche}&platform={platform}&...
+X-API-Key: cs_your_key_here</pre>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function createKey() {
+  const name = document.getElementById('key-name').value.trim();
+  const tier = document.getElementById('key-tier').value;
+  if (!name) { alert('Βάλε ένα όνομα για το key'); return; }
+
+  const resp = await fetch(`/api/keys?name=${encodeURIComponent(name)}&tier=${tier}`, { method: 'POST' });
+  const data = await resp.json();
+
+  const box = document.getElementById('new-key-box');
+  const kv  = document.getElementById('new-key-value');
+  kv.textContent = data.key.key;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth' });
+
+  document.getElementById('key-name').value = '';
+  await loadKeys();
+}
+
+function copyKey(el) {
+  navigator.clipboard.writeText(el.textContent);
+  const orig = el.textContent;
+  el.textContent = '✅ Αντιγράφηκε!';
+  setTimeout(() => el.textContent = orig, 1500);
+}
+
+async function loadKeys() {
+  const resp = await fetch('/api/keys');
+  const { keys } = await resp.json();
+  const container = document.getElementById('keys-list');
+
+  if (!keys.length) {
+    container.innerHTML = '<div class="empty-keys">Δεν έχεις δημιουργήσει API keys ακόμα.</div>';
+    return;
+  }
+
+  const tierClass = { free: 'tier-free', pro: 'tier-pro', unlimited: 'tier-unlimited' };
+  container.innerHTML = `
+    <table class="keys-table">
+      <thead>
+        <tr>
+          <th>Όνομα</th><th>Key</th><th>Tier</th>
+          <th>Calls σήμερα</th><th>Σύνολο</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${keys.map(k => {
+          const pct = Math.min(100, Math.round(k.calls_today / k.limit_per_day * 100));
+          return `
+          <tr>
+            <td><b>${escHtml(k.name)}</b></td>
+            <td><span class="key-code" onclick="copyFull('${k.key_full}')" title="Κλικ για αντιγραφή">${k.key_preview}</span></td>
+            <td><span class="tier-badge ${tierClass[k.tier] || 'tier-free'}">${k.tier}</span></td>
+            <td>
+              <div class="calls-bar">
+                <span>${k.calls_today} / ${k.limit_per_day}</span>
+                <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+              </div>
+            </td>
+            <td>${k.calls_total.toLocaleString()}</td>
+            <td><span class="${k.active ? 'status-active' : 'status-revoked'}">${k.active ? '● Active' : '○ Revoked'}</span></td>
+            <td>${k.active ? `<button class="btn btn-danger" onclick="revokeKey('${k.key_full}')">Ανάκληση</button>` : ''}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function revokeKey(key) {
+  if (!confirm('Σίγουρα θέλεις να ανακαλέσεις αυτό το key;')) return;
+  await fetch(`/api/keys/${key}`, { method: 'DELETE' });
+  await loadKeys();
+}
+
+function copyFull(key) {
+  navigator.clipboard.writeText(key);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showCode(lang, btn) {
+  document.querySelectorAll('[id^="code-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
+  document.getElementById('code-' + lang).style.display = 'block';
+  btn.classList.add('active');
+}
+
+loadKeys();
+</script>
+</body>
+</html>

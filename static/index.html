@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorScan</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0d1a;
+    --surface:   #14142b;
+    --surface2:  #1e1e3f;
+    --border:    #2a2a4a;
+    --accent:    #7c3aed;
+    --accent2:   #a855f7;
+    --green:     #10b981;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --blue:      #3b82f6;
+    --text:      #e2e8f0;
+    --text2:     #94a3b8;
+    --text3:     #64748b;
+    --card-h:    220px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-size: 18px; font-weight: 800; color: var(--accent2); letter-spacing: -0.5px; }
+  .logo span { color: var(--text2); font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .stat-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stat-chip b { color: var(--accent2); }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; flex: 1; min-height: 0; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .filter-section { display: flex; flex-direction: column; gap: 8px; }
+  .filter-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+  }
+  .filter-input, .filter-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+  .filter-select option { background: var(--surface2); }
+
+  .range-row { display: flex; gap: 6px; align-items: center; }
+  .range-row input { flex: 1; }
+  .range-sep { color: var(--text3); font-size: 12px; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .toggle-row label { font-size: 13px; cursor: pointer; }
+  .toggle { position: relative; width: 36px; height: 20px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: 0.2s;
+    cursor: pointer;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 2px; top: 2px;
+    background: var(--text3);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: #fff; }
+
+  .platform-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .ptab {
+    flex: 1;
+    padding: 6px 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    min-width: 50px;
+  }
+  .ptab:hover { border-color: var(--accent); color: var(--accent2); }
+  .ptab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .niche-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+  .npill {
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .npill:hover { border-color: var(--accent); color: var(--accent2); }
+  .npill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { opacity: 0.85; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── SEARCH BAR ── */
+  .search-bar { display: flex; gap: 10px; align-items: center; }
+  .search-input-wrap { flex: 1; position: relative; }
+  .search-input-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px 10px 40px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input-wrap input:focus { border-color: var(--accent); }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .result-count { font-size: 13px; color: var(--text2); white-space: nowrap; }
+
+  /* ── STATS BAR ── */
+  .stats-bar { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .stat-card .sc-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .stat-card .sc-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
+  .stat-card .sc-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── CREATOR GRID ── */
+  .creators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .creator-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, transform 0.1s;
+    cursor: default;
+  }
+  .creator-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .card-top { display: flex; align-items: center; gap: 12px; }
+  .card-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .card-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
+  .card-username { font-size: 11px; color: var(--text3); }
+
+  .card-stats { display: flex; gap: 8px; }
+  .card-stat {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 7px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .card-stat .cs-val { font-size: 14px; font-weight: 700; color: var(--text); }
+  .card-stat .cs-lbl { font-size: 10px; color: var(--text3); }
+
+  .card-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .badge-platform-youtube  { background: #fee2e2; color: #991b1b; }
+  .badge-platform-twitch   { background: #ede9fe; color: #5b21b6; }
+  .badge-platform-tiktok   { background: #fce7f3; color: #9d174d; }
+  .badge-platform-instagram{ background: #fef3c7; color: #92400e; }
+  .badge-niche { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+  .badge-email { background: #d1fae5; color: #065f46; }
+
+  .card-bio {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-actions { display: flex; gap: 6px; margin-top: 2px; }
+  .card-btn {
+    flex: 1;
+    padding: 6px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.15s;
+    display: block;
+  }
+  .card-btn:hover { border-color: var(--accent); color: var(--accent2); }
+  .card-btn.email-btn { border-color: var(--green); color: var(--green); }
+
+  /* ── PAGINATION ── */
+  .pagination { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 10px 0; }
+  .page-btn {
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-info { font-size: 13px; color: var(--text2); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty h3 { font-size: 18px; color: var(--text2); margin-bottom: 8px; }
+  .empty p { font-size: 14px; }
+
+  /* ── SCAN PANEL ── */
+  .scan-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scan-panel h4 { font-size: 13px; font-weight: 700; color: var(--accent2); }
+  .scan-log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    height: 140px;
+    overflow-y: auto;
+    font-size: 11px;
+    font-family: 'Consolas', monospace;
+    color: var(--text2);
+    line-height: 1.8;
+  }
+  .scan-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .scan-options select {
+    flex: 1;
+    min-width: 90px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+  }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; padding: 60px; color: var(--text3); }
+  .spinner {
+    display: inline-block;
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">🔍 CreatorScan <span>Micro-creator discovery</span></div>
+  <div class="topbar-right">
+    <div class="stat-chip">Σύνολο: <b id="total-count">…</b></div>
+    <div class="stat-chip">Με email: <b id="email-count">…</b></div>
+    <div class="stat-chip" id="platform-chip">Platforms: <b id="platform-count">…</b></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Platform -->
+    <div class="filter-section">
+      <div class="filter-label">Platform</div>
+      <div class="platform-tabs" id="platform-tabs">
+        <div class="ptab active" data-val="">Όλες</div>
+        <div class="ptab" data-val="youtube">📺 YT</div>
+        <div class="ptab" data-val="twitch">🎮 TW</div>
+        <div class="ptab" data-val="tiktok">🎵 TK</div>
+      </div>
+    </div>
+
+    <!-- Niche -->
+    <div class="filter-section">
+      <div class="filter-label">Niche</div>
+      <div class="niche-pills" id="niche-pills">
+        <div class="npill active" data-val="">Όλες</div>
+      </div>
+    </div>
+
+    <!-- Followers range -->
+    <div class="filter-section">
+      <div class="filter-label">Followers Range</div>
+      <div class="range-row">
+        <input class="filter-input" type="number" id="min-followers" value="2000" min="0" placeholder="Min">
+        <span class="range-sep">–</span>
+        <input class="filter-input" type="number" id="max-followers" value="100000" min="0" placeholder="Max">
+      </div>
+    </div>
+
+    <!-- Language -->
+    <div class="filter-section">
+      <div class="filter-label">Γλώσσα</div>
+      <input class="filter-input" type="text" id="language" placeholder="π.χ. el, en, es" maxlength="5">
+    </div>
+
+    <!-- Email toggle -->
+    <div class="filter-section">
+      <div class="toggle-row" onclick="toggleEmail()">
+        <label>Μόνο με Email</label>
+        <label class="toggle">
+          <input type="checkbox" id="email-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Apply button -->
+    <button class="btn btn-primary" onclick="applyFilters()">🔎 Εφαρμογή Φίλτρων</button>
+
+    <!-- Export CSV -->
+    <button class="btn btn-green" onclick="exportCSV()">⬇ Export CSV</button>
+
+    <!-- Scan panel -->
+    <div class="scan-panel">
+      <h4>🚀 Νέο Scan</h4>
+      <div class="scan-options">
+        <select id="scan-platform">
+          <option value="youtube">YouTube</option>
+          <option value="twitch">Twitch</option>
+          <option value="all">Και τα δύο</option>
+        </select>
+        <select id="scan-niche">
+          <option value="Gaming">Gaming</option>
+        </select>
+      </div>
+      <div class="scan-log" id="scan-log">Εδώ θα εμφανιστεί η πρόοδος του scan...</div>
+      <button class="btn btn-primary" id="scan-btn" onclick="startScan()">▶ Ξεκίνα Scan</button>
+    </div>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- Search -->
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Αναζήτηση creator (όνομα, username, bio)…" oninput="debounceSearch()">
+      </div>
+      <div class="result-count" id="result-count">– creators</div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="sc-label">Σύνολο Creators</div>
+        <div class="sc-value" id="s-total">…</div>
+        <div class="sc-sub">στη βάση δεδομένων</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Με Email</div>
+        <div class="sc-value" id="s-email">…</div>
+        <div class="sc-sub">έτοιμοι για outreach</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">YouTube</div>
+        <div class="sc-value" id="s-youtube">…</div>
+        <div class="sc-sub">channels</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Twitch</div>
+        <div class="sc-value" id="s-twitch">…</div>
+        <div class="sc-sub">streamers</div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <div>Φόρτωση creators…</div>
+    </div>
+    <div id="creators-grid" class="creators-grid hidden"></div>
+    <div id="empty-state" class="empty hidden">
+      <div class="empty-icon">🔍</div>
+      <h3>Δεν βρέθηκαν creators</h3>
+      <p>Δοκίμασε διαφορετικά φίλτρα ή τρέξε ένα νέο Scan από το sidebar.</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination">
+      <button class="page-btn" id="prev-btn" onclick="prevPage()" disabled>← Προηγούμενη</button>
+      <span class="page-info" id="page-info">Σελίδα 1</span>
+      <button class="page-btn" id="next-btn" onclick="nextPage()">Επόμενη →</button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const state = {
+  platform: '',
+  niche: '',
+  min: 2000,
+  max: 100000,
+  email: false,
+  language: '',
+  search: '',
+  offset: 0,
+  limit: 48,
+  total: 0,
+};
+
+let searchTimer = null;
+let scanTimer = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadStats(), loadNiches()]);
+  await loadCreators();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const s = await fetch('/api/stats').then(r => r.json());
+  document.getElementById('total-count').textContent = s.total.toLocaleString();
+  document.getElementById('email-count').textContent = s.with_email.toLocaleString();
+  document.getElementById('platform-count').textContent = Object.keys(s.by_platform).length;
+  document.getElementById('s-total').textContent = s.total.toLocaleString();
+  document.getElementById('s-email').textContent = s.with_email.toLocaleString();
+  document.getElementById('s-youtube').textContent = (s.by_platform.youtube || 0).toLocaleString();
+  document.getElementById('s-twitch').textContent = (s.by_platform.twitch || 0).toLocaleString();
+}
+
+// ── Niches ────────────────────────────────────────────────────────────────────
+async function loadNiches() {
+  const { niches } = await fetch('/api/niches').then(r => r.json());
+  const pills = document.getElementById('niche-pills');
+  const scanSelect = document.getElementById('scan-niche');
+  niches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'npill';
+    el.dataset.val = n;
+    el.textContent = n;
+    el.onclick = () => selectNiche(el);
+    pills.appendChild(el);
+
+    const opt = document.createElement('option');
+    opt.value = n; opt.textContent = n;
+    scanSelect.appendChild(opt);
+  });
+}
+
+function selectNiche(el) {
+  document.querySelectorAll('.npill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  state.niche = el.dataset.val;
+  state.offset = 0;
+  loadCreators();
+}
+
+// ── Platform tabs ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.ptab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.platform = tab.dataset.val;
+    state.offset = 0;
+    loadCreators();
+  };
+});
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function toggleEmail() {
+  const cb = document.getElementById('email-toggle');
+  cb.checked = !cb.checked;
+  state.email = cb.checked;
+}
+
+function applyFilters() {
+  state.min = parseInt(document.getElementById('min-followers').value) || 2000;
+  state.max = parseInt(document.getElementById('max-followers').value) || 100000;
+  state.language = document.getElementById('language').value.trim();
+  state.email = document.getElementById('email-toggle').checked;
+  state.offset = 0;
+  loadCreators();
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.search = document.getElementById('search-input').value.trim();
+    state.offset = 0;
+    loadCreators();
+  }, 350);
+}
+
+// ── Load creators ─────────────────────────────────────────────────────────────
+async function loadCreators() {
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('creators-grid').classList.add('hidden');
+  document.getElementById('empty-state').classList.add('hidden');
+
+  const params = new URLSearchParams({
+    limit:         state.limit,
+    offset:        state.offset,
+    min_followers: state.min,
+    max_followers: state.max,
+  });
+  if (state.platform)  params.set('platform', state.platform);
+  if (state.niche)     params.set('niche', state.niche);
+  if (state.email)     params.set('has_email', 'true');
+  if (state.language)  params.set('language', state.language);
+  if (state.search)    params.set('search', state.search);
+
+  const data = await fetch('/api/creators?' + params).then(r => r.json());
+  state.total = data.total;
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('result-count').textContent = `${data.total.toLocaleString()} creators`;
+
+  if (!data.creators.length) {
+    document.getElementById('empty-state').classList.remove('hidden');
+    document.getElementById('pagination').style.display = 'none';
+    return;
+  }
+
+  const grid = document.getElementById('creators-grid');
+  grid.innerHTML = '';
+  data.creators.forEach(c => grid.appendChild(creatorCard(c)));
+  grid.classList.remove('hidden');
+
+  // Pagination
+  const totalPages = Math.ceil(state.total / state.limit);
+  const curPage = Math.floor(state.offset / state.limit) + 1;
+  document.getElementById('page-info').textContent = `Σελίδα ${curPage} / ${totalPages}`;
+  document.getElementById('prev-btn').disabled = state.offset === 0;
+  document.getElementById('next-btn').disabled = state.offset + state.limit >= state.total;
+  document.getElementById('pagination').style.display = 'flex';
+}
+
+// ── Creator card ──────────────────────────────────────────────────────────────
+function fmtNum(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function creatorCard(c) {
+  const el = document.createElement('div');
+  el.className = 'creator-card';
+
+  const initials = (c.display_name || c.username || '?')[0].toUpperCase();
+  const avatarHtml = c.avatar_url
+    ? `<img src="${c.avatar_url}" alt="" onerror="this.style.display='none';this.parentNode.textContent='${initials}'">`
+    : initials;
+
+  const platformClass = `badge-platform-${c.platform}`;
+  const platformLabel = {youtube:'▶ YouTube', twitch:'🎮 Twitch', tiktok:'🎵 TikTok', instagram:'📸 Instagram'}[c.platform] || c.platform;
+
+  const emailBadge = c.has_email ? `<span class="badge badge-email">✉ Email</span>` : '';
+  const nicheBadge = c.niche ? `<span class="badge badge-niche">${c.niche}</span>` : '';
+  const langBadge = c.language ? `<span class="badge badge-niche">${c.language.toUpperCase()}</span>` : '';
+
+  const emailBtn = c.email
+    ? `<a href="mailto:${c.email}" class="card-btn email-btn">✉ ${c.email.substring(0,22)}</a>`
+    : '';
+
+  el.innerHTML = `
+    <div class="card-top">
+      <div class="card-avatar">${avatarHtml}</div>
+      <div>
+        <div class="card-name">${escHtml(c.display_name || c.username)}</div>
+        <div class="card-username">@${escHtml(c.username)}</div>
+      </div>
+    </div>
+    <div class="card-stats">
+      <div class="card-stat">
+        <div class="cs-val">${fmtNum(c.followers)}</div>
+        <div class="cs-lbl">Followers</div>
+      </div>
+      <div class="card-stat">
+        <div class="cs-val">${fmtNum(c.avg_views)}</div>
+        <div class="cs-lbl">Avg Views</div>
+      </div>
+      <div class="card-stat">
+        <div class="cs-val">${fmtNum(c.posts_count)}</div>
+        <div class="cs-lbl">Posts</div>
+      </div>
+    </div>
+    <div class="card-badges">
+      <span class="badge ${platformClass}">${platformLabel}</span>
+      ${nicheBadge}${langBadge}${emailBadge}
+    </div>
+    ${c.bio ? `<div class="card-bio">${escHtml(c.bio)}</div>` : ''}
+    <div class="card-actions">
+      <a href="${c.profile_url}" target="_blank" class="card-btn">🔗 Άνοιγμα</a>
+      ${emailBtn}
+    </div>
+  `;
+  return el;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function prevPage() {
+  state.offset = Math.max(0, state.offset - state.limit);
+  loadCreators();
+  window.scrollTo(0, 0);
+}
+function nextPage() {
+  state.offset += state.limit;
+  loadCreators();
+  window.scrollTo(0, 0);
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const params = new URLSearchParams({ min_followers: state.min, max_followers: state.max });
+  if (state.platform) params.set('platform', state.platform);
+  if (state.niche)    params.set('niche', state.niche);
+  if (state.email)    params.set('has_email', 'true');
+  window.location.href = '/api/export/csv?' + params;
+}
+
+// ── Scan ──────────────────────────────────────────────────────────────────────
+async function startScan() {
+  const btn = document.getElementById('scan-btn');
+  const log = document.getElementById('scan-log');
+  const platform = document.getElementById('scan-platform').value;
+  const niche    = document.getElementById('scan-niche').value;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Σε εξέλιξη…';
+  log.textContent = 'Ξεκινάει scan…\n';
+
+  await fetch(`/api/scan/start?platform=${platform}&niche=${niche}`, { method: 'POST' });
+
+  scanTimer = setInterval(async () => {
+    const status = await fetch('/api/scan/status').then(r => r.json());
+    log.textContent = status.log.join('\n');
+    log.scrollTop = log.scrollHeight;
+
+    if (!status.running) {
+      clearInterval(scanTimer);
+      btn.disabled = false;
+      btn.textContent = '▶ Ξεκίνα Scan';
+      await loadStats();
+      await loadCreators();
+    }
+  }, 1500);
+}
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
