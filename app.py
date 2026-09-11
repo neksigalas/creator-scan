@@ -38,6 +38,46 @@ db.init_db()
 
 app = FastAPI(title="CreatorScan API", version="2.0")
 
+# ── Access gate ───────────────────────────────────────────────────────────────
+# The dashboard, CSV export, SMTP settings, bulk send and API-key management all
+# sit behind HTTP Basic auth. The live site was open to anyone with the link:
+# the full email list could be downloaded and anyone could mint an API key.
+# /v1/* keeps its own API-key auth. On Vercel with no ACCESS_PASSWORD set the
+# app refuses every request rather than falling back to open.
+import base64
+import secrets
+from starlette.requests import Request
+from starlette.responses import Response
+
+ACCESS_USER     = os.getenv("ACCESS_USER", "admin")
+ACCESS_PASSWORD = os.getenv("ACCESS_PASSWORD", "")
+ON_VERCEL       = bool(os.getenv("VERCEL"))
+
+
+def _authorized(header: str) -> bool:
+    if not header.startswith("Basic "):
+        return False
+    try:
+        user, _, pw = base64.b64decode(header[6:]).decode("utf-8").partition(":")
+    except Exception:
+        return False
+    return (secrets.compare_digest(user, ACCESS_USER)
+            and secrets.compare_digest(pw, ACCESS_PASSWORD))
+
+
+@app.middleware("http")
+async def access_gate(request: Request, call_next):
+    if request.url.path.startswith("/v1/"):
+        return await call_next(request)
+    if not ACCESS_PASSWORD:
+        if ON_VERCEL:
+            return Response("CreatorScan is not configured for public access.", status_code=503)
+        return await call_next(request)          # local development
+    if _authorized(request.headers.get("authorization", "")):
+        return await call_next(request)
+    return Response("Authentication required", status_code=401,
+                    headers={"WWW-Authenticate": 'Basic realm="CreatorScan"'})
+
 # ── Serve static files ────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
