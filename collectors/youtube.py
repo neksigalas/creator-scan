@@ -207,6 +207,49 @@ def scrape_youtube_channel_links(channel_url: str) -> list[str]:
         return []
 
 
+def scrape_related_channel_ids(channel_url: str, max_results: int = 12) -> list[str]:
+    """
+    Gets related channel IDs from a channel's latest video watch page.
+    YouTube's sidebar recommendations show channels of similar content.
+
+    Strategy:
+      1. channel URL → regex for videoId in page HTML
+      2. first video watch page → ytInitialData → extract UC* browseIds from sidebar
+    """
+    try:
+        # Step 1: get video IDs directly from channel page HTML (fast regex)
+        resp = requests.get(channel_url, headers=HEADERS, timeout=12)
+        video_ids = list(dict.fromkeys(
+            re.findall(r'"videoId":"([A-Za-z0-9_-]{11})"', resp.text)
+        ))
+        if not video_ids:
+            return []
+
+        # Extract seed channel ID to exclude
+        seed_id = ""
+        m = re.search(r'"channelId":"(UC[A-Za-z0-9_-]+)"', resp.text)
+        if m:
+            seed_id = m.group(1)
+
+        # Step 2: scrape first video's watch page for recommended channels
+        watch_url = f"https://www.youtube.com/watch?v={video_ids[0]}"
+        resp2 = requests.get(watch_url, headers=HEADERS, timeout=15)
+        # Extract all UC* channel IDs from watch page
+        all_ids = re.findall(r'"browseId":"(UC[A-Za-z0-9_-]+)"', resp2.text)
+        seen: set[str] = set()
+        channel_ids: list[str] = []
+        for bid in all_ids:
+            if bid != seed_id and bid not in seen:
+                seen.add(bid)
+                channel_ids.append(bid)
+                if len(channel_ids) >= max_results:
+                    break
+        return channel_ids
+
+    except Exception:
+        return []
+
+
 def scrape_youtube_channel_ids(query: str, max_results: int = 30) -> list[str]:
     """
     Scrapes YouTube search results (type=channel) → channel IDs.
@@ -431,6 +474,44 @@ class YouTubeCollector:
         console.print(f"  🔍 Scraping YouTube: [cyan]{query}[/cyan]")
         channel_ids = scrape_youtube_channel_ids(query, max_results=max_results)
         details = self.get_channel_details(channel_ids)
+        for creator in details:
+            if min_followers <= creator["followers"] <= max_followers:
+                yield creator
+
+    def expand_related(
+        self,
+        seed_channel_ids: list[str],
+        min_followers: int = 2_000,
+        max_followers: int = 100_000,
+        max_related_per_channel: int = 8,
+        already_seen: set[str] | None = None,
+    ) -> Generator[dict, None, None]:
+        """
+        Related Channels Expansion — εκθετική ανάπτυξη DB.
+
+        Για κάθε seed channel ID, scrape-άρει τα "featured channels" (channels tab).
+        Αυτά είναι creators που ο αρχικός creator προτείνει → συνήθως ίδια niche!
+
+        Seed από DB → Related → Related of Related → exponential growth.
+        """
+        if already_seen is None:
+            already_seen = set(seed_channel_ids)
+
+        all_related_ids: list[str] = []
+        for channel_id in seed_channel_ids:
+            profile_url = f"https://www.youtube.com/channel/{channel_id}"
+            related = scrape_related_channel_ids(profile_url, max_results=max_related_per_channel)
+            for rid in related:
+                if rid not in already_seen:
+                    already_seen.add(rid)
+                    all_related_ids.append(rid)
+            time.sleep(0.5)
+
+        if not all_related_ids:
+            return
+
+        console.print(f"  🔗 Related channels found: [cyan]{len(all_related_ids)}[/cyan] new IDs")
+        details = self.get_channel_details(all_related_ids)
         for creator in details:
             if min_followers <= creator["followers"] <= max_followers:
                 yield creator
