@@ -12,6 +12,7 @@ Usage:
     python expand_related.py 100        # μόνο τα πρώτα 100
     python expand_related.py 100 2      # 2 rounds (related of related)
 """
+import os
 import sys
 import time
 import dotenv
@@ -28,7 +29,7 @@ MIN_FOLLOWERS = 2_000
 MAX_FOLLOWERS = 100_000
 
 client = get_client()
-yt = YouTubeCollector()
+yt = YouTubeCollector(api_key=os.environ["YOUTUBE_API_KEY"])
 
 print(f"=== Related Channels Expander ===")
 print(f"Seed: up to {MAX_SEED} YT creators | {ROUNDS} round(s)")

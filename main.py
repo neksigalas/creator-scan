@@ -71,6 +71,7 @@ def get_instagram_collector():
 def cmd_scan(args):
     """Σκανάρει platforms και αποθηκεύει creators στη DB."""
     import db
+    import db_cloud
     db.init_db()
 
     from processors.niche import NICHE_KEYWORDS
@@ -162,6 +163,11 @@ def cmd_scan(args):
 
                 for creator in gen:
                     is_new = db.upsert_creator(creator)
+                    # Also sync to cloud Supabase
+                    try:
+                        db_cloud.upsert_creator(creator)
+                    except Exception:
+                        pass
                     if is_new:
                         niche_new += 1
                     else:
