@@ -97,7 +97,9 @@ def query_creators(platform=None, niche=None, min_followers=2000,
     elif sort == "email_first":
         q = q.order("has_email", desc=True).order("followers", desc=True)
     elif sort == "engagement_desc":
-        q = q.order("engagement_rate", desc=True, nullsfirst=False)
+        # Supabase doesn't support nullsfirst=False reliably — filter nulls out
+        q = q.not_.is_("engagement_rate", "null")
+        q = q.order("engagement_rate", desc=True)
     else:  # followers_desc (default)
         q = q.order("followers", desc=True)
 
