@@ -49,18 +49,29 @@ CATEGORY_NICHE_MAP: dict[str, str] = {
 
 # Niche → Twitch category names to search
 NICHE_CATEGORIES: dict[str, list[str]] = {
-    "Gaming":       ["Minecraft", "Fortnite", "Valorant", "Grand Theft Auto V", "Apex Legends"],
+    "Gaming":       [
+        "Minecraft", "Fortnite", "Valorant", "Grand Theft Auto V", "Apex Legends",
+        "League of Legends", "Counter-Strike 2", "Dota 2", "Overwatch 2",
+        "Elden Ring", "Stardew Valley", "Rust", "Escape from Tarkov",
+        "Hearthstone", "Magic: The Gathering Arena", "Teamfight Tactics",
+        "Dead by Daylight", "Phasmophobia", "Among Us", "Fall Guys",
+    ],
     "Fitness":      ["Fitness & Health"],
-    "Tech":         ["Science & Technology"],
-    "Beauty":       ["Beauty & Body Art"],
-    "Food":         ["Food & Drink"],
+    "Tech":         ["Science & Technology", "Software and Game Development"],
+    "Beauty":       ["Beauty & Body Art", "Makeup"],
+    "Food":         ["Food & Drink", "Cooking"],
     "Travel":       ["Travel & Outdoors"],
-    "Finance":      ["Poker", "Crypto"],
-    "Education":    ["Talk Shows & Podcasts", "Chess"],
-    "Music":        ["Music"],
-    "Art & Design": ["Art"],
-    "Lifestyle":    ["Just Chatting", "ASMR"],
-    "Sports":       ["Sports"],
+    "Finance":      ["Poker", "Crypto", "Business & Finance"],
+    "Education":    ["Talk Shows & Podcasts", "Chess", "Special Events", "Education"],
+    "Music":        ["Music", "Makers & Crafting"],
+    "Art & Design": ["Art", "3D Art", "Pixel Art", "Drawing"],
+    "Lifestyle":    ["Just Chatting", "ASMR", "Pools, Hot Tubs, and Beaches"],
+    "Sports":       ["Sports", "Boxing", "Basketball", "Football", "Soccer", "Tennis", "Golf"],
+    "Comedy":       ["Just Chatting", "Talk Shows & Podcasts"],
+    "Parenting":    ["Just Chatting"],
+    "DIY & Crafts": ["Makers & Crafting", "Art"],
+    "Pets & Animals": ["Animals, Aquariums, and Zoos"],
+    "Business":     ["Business & Finance", "Entrepreneurship"],
 }
 
 
