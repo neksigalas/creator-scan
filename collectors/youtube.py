@@ -214,6 +214,15 @@ class YouTubeCollector:
                 combined     = f"{description} {keywords_str} {snippet.get('title', '')}"
 
                 niche, niches = classify_niche(combined)
+
+                # Build profile_url first — needed for channel About page scraping
+                custom_url = snippet.get("customUrl", "")
+                profile_url = (
+                    f"https://www.youtube.com/{custom_url}"
+                    if custom_url else
+                    f"https://www.youtube.com/channel/{item['id']}"
+                )
+
                 email = extract_email(description)
                 # Αν δεν βρέθηκε email, ψάξε στο Linktree/Beacons από bio
                 if not email:
@@ -227,13 +236,6 @@ class YouTubeCollector:
                         if scraped:
                             email = scraped
                             break
-
-                custom_url = snippet.get("customUrl", "")
-                profile_url = (
-                    f"https://www.youtube.com/{custom_url}"
-                    if custom_url else
-                    f"https://www.youtube.com/channel/{item['id']}"
-                )
 
                 results.append({
                     "platform":        "youtube",
