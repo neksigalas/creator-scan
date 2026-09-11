@@ -851,6 +851,159 @@ input, select { font-family: inherit; }
 .card-btn-notes svg { opacity: .6; }
 .card-btn-notes:hover svg { opacity: 1; }
 
+/* ── BULK SELECT ─────────────────────────────────────────────────────────────── */
+.bulk-bar {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.bulk-bar.active { display: flex; }
+.bulk-bar-count { flex: 1; }
+.bulk-bar-btn {
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid rgba(255,255,255,.4);
+  background: transparent;
+  color: #fff;
+  font-size: 12px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: background .12s;
+}
+.bulk-bar-btn:hover { background: rgba(255,255,255,.15); }
+.bulk-bar-btn.primary { background: #fff; color: var(--accent); border-color: #fff; }
+.bulk-bar-btn.primary:hover { background: #f0f4ff; }
+
+.card-select-wrap {
+  position: absolute; top: 10px; left: 10px; z-index: 10;
+  display: none;
+}
+.bulk-mode .card-select-wrap { display: block; }
+.card-checkbox {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.creator-card { position: relative; }
+.bulk-mode .creator-card { padding-left: 38px; }
+.creator-card.selected { border-color: var(--accent) !important; background: var(--accent-lt); }
+
+/* ── OUTREACH TEMPLATE MODAL ─────────────────────────────────────────────────── */
+.tpl-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 0;
+  width: 720px;
+  max-width: 96vw;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(15,23,42,.25);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.tpl-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tpl-title { font-size: 16px; font-weight: 800; color: var(--text); flex: 1; }
+.tpl-body { display: flex; flex: 1; overflow: hidden; }
+.tpl-left {
+  flex: 1; padding: 20px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+}
+.tpl-right {
+  width: 280px; flex-shrink: 0; padding: 20px;
+  display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+  background: var(--surface2);
+}
+.tpl-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text3); margin-bottom: 4px;
+}
+.tpl-input {
+  width: 100%; padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--text); font-size: 13px; font-family: inherit;
+  outline: none; transition: border-color .12s;
+}
+.tpl-input:focus { border-color: var(--accent); }
+.tpl-textarea {
+  width: 100%; min-height: 200px; padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--text); font-size: 13px; font-family: inherit;
+  resize: vertical; outline: none; line-height: 1.6;
+  transition: border-color .12s;
+}
+.tpl-textarea:focus { border-color: var(--accent); }
+.tpl-vars { display: flex; flex-wrap: wrap; gap: 4px; }
+.tpl-var {
+  padding: 2px 7px;
+  background: var(--accent-lt);
+  border: 1px solid rgba(29,78,216,.2);
+  border-radius: 4px;
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  cursor: pointer; font-family: monospace;
+  transition: background .1s;
+}
+.tpl-var:hover { background: var(--accent); color: #fff; }
+.tpl-preview {
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  padding: 10px 12px; font-size: 12px; color: var(--text2); line-height: 1.6;
+  flex: 1; overflow-y: auto; min-height: 100px;
+  white-space: pre-wrap;
+}
+.tpl-recipients {
+  display: flex; flex-direction: column; gap: 3px;
+  max-height: 180px; overflow-y: auto;
+}
+.tpl-recipient {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text2); padding: 3px 0;
+}
+.tpl-recipient svg { width: 10px; height: 10px; fill: var(--green); flex-shrink: 0; }
+.tpl-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.tpl-send-count { flex: 1; font-size: 12px; color: var(--text2); }
+.tpl-dry-run { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); font-weight: 600; cursor: pointer; }
+.tpl-send-btn {
+  padding: 9px 20px;
+  background: var(--green);
+  border: none; border-radius: var(--r-sm);
+  color: #fff; font-size: 13px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: opacity .12s;
+}
+.tpl-send-btn:hover { opacity: .88; }
+.tpl-send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* SMTP Settings modal */
+.smtp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.smtp-grid .full { grid-column: 1 / -1; }
+
+/* Template preset pills */
+.tpl-presets { display: flex; flex-wrap: wrap; gap: 4px; }
+.tpl-preset-btn {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  cursor: pointer; transition: all .12s;
+}
+.tpl-preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
 /* ── DETAIL DRAWER ──────────────────────────────────────────────────────────── */
 .drawer-overlay {
   position: fixed; inset: 0;
@@ -1078,6 +1231,9 @@ input, select { font-family: inherit; }
   <div class="topbar-right">
     <div class="tstat"><b id="total-count">…</b> creators</div>
     <div class="tstat"><b id="email-count">…</b> με email</div>
+    <button class="card-btn" onclick="openSmtpModal()" title="Email Settings" style="padding:7px 10px;border-radius:var(--r-sm)">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.99 6.99 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.49.49 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
   </div>
 </header>
 
@@ -1304,6 +1460,10 @@ input, select { font-family: inherit; }
     <div class="grid-toolbar">
       <div class="result-count"><b id="result-count">…</b> creators βρέθηκαν</div>
       <div class="toolbar-spacer"></div>
+      <button class="card-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="padding:6px 12px;font-size:12px;white-space:nowrap">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        Bulk Outreach
+      </button>
       <select class="sort-select" id="sort-select" onchange="onSortChange()">
         <option value="followers_desc">↓ Followers (πολλοί πρώτα)</option>
         <option value="followers_asc">↑ Followers (λίγοι πρώτα)</option>
@@ -1365,6 +1525,138 @@ input, select { font-family: inherit; }
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" onclick="closeListModal()">Κλείσιμο</button>
     </div>
+  </div>
+</div>
+
+<!-- ── BULK ACTION BAR ───────────────────────────────────────────────────── -->
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bulk-bar-count" id="bulk-count-label">0 creators επιλεγμένοι</span>
+  <button class="bulk-bar-btn" onclick="bulkSelectAllEmail()">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    Επιλογή με Email
+  </button>
+  <button class="bulk-bar-btn primary" onclick="openTemplateModal()" id="bulk-send-btn">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    Αποστολή Outreach
+  </button>
+  <button class="bulk-bar-btn" onclick="exitBulkMode()">✕ Ακύρωση</button>
+</div>
+
+<!-- ── OUTREACH TEMPLATE MODAL ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="template-modal" hidden onclick="if(event.target===this)closeTemplateModal()">
+  <div class="tpl-modal-box">
+    <div class="tpl-header">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent)"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      <div class="tpl-title">Outreach Email Template</div>
+      <button class="drawer-close" onclick="closeTemplateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="tpl-body">
+      <!-- Left: editor -->
+      <div class="tpl-left">
+        <!-- Presets -->
+        <div>
+          <div class="tpl-label">Quick Templates</div>
+          <div class="tpl-presets">
+            <button class="tpl-preset-btn" onclick="loadPreset('collab')">🤝 Collaboration</button>
+            <button class="tpl-preset-btn" onclick="loadPreset('review')">📦 Product Review</button>
+            <button class="tpl-preset-btn" onclick="loadPreset('sponsor')">💰 Sponsorship</button>
+            <button class="tpl-preset-btn" onclick="loadPreset('affiliate')">🔗 Affiliate</button>
+          </div>
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <div class="tpl-label">Subject</div>
+          <input class="tpl-input" id="tpl-subject" type="text"
+            placeholder="e.g. Collaboration opportunity for {{creator_name}}"
+            oninput="updatePreview()">
+        </div>
+
+        <!-- Body -->
+        <div style="flex:1">
+          <div class="tpl-label">Body (HTML or plain text)</div>
+          <textarea class="tpl-textarea" id="tpl-body" oninput="updatePreview()"
+            placeholder="Hi {{creator_name}},&#10;&#10;I came across your {{platform}} channel and loved your content..."></textarea>
+        </div>
+
+        <!-- Variables reference -->
+        <div>
+          <div class="tpl-label">Template Variables — click to insert</div>
+          <div class="tpl-vars">
+            <span class="tpl-var" onclick="insertVar('{{creator_name}}')">{{creator_name}}</span>
+            <span class="tpl-var" onclick="insertVar('{{creator_username}}')">{{creator_username}}</span>
+            <span class="tpl-var" onclick="insertVar('{{platform}}')">{{platform}}</span>
+            <span class="tpl-var" onclick="insertVar('{{followers}}')">{{followers}}</span>
+            <span class="tpl-var" onclick="insertVar('{{niche}}')">{{niche}}</span>
+            <span class="tpl-var" onclick="insertVar('{{profile_url}}')">{{profile_url}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: preview + recipients -->
+      <div class="tpl-right">
+        <div>
+          <div class="tpl-label">Preview (1st recipient)</div>
+          <div class="tpl-preview" id="tpl-preview">Γράψε κάτι στο body για preview…</div>
+        </div>
+        <div>
+          <div class="tpl-label">Recipients (<span id="tpl-rcpt-count">0</span> με email)</div>
+          <div class="tpl-recipients" id="tpl-recipients"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tpl-footer">
+      <div class="tpl-send-count" id="tpl-send-count">0 emails θα σταλούν</div>
+      <label class="tpl-dry-run">
+        <input type="checkbox" id="tpl-dry-run" checked>
+        Dry run (δοκιμή — δεν στέλνει)
+      </label>
+      <button class="modal-btn modal-btn-cancel" onclick="closeTemplateModal()">Ακύρωση</button>
+      <button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        Αποστολή
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SMTP SETTINGS MODAL ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="smtp-modal" hidden onclick="if(event.target===this)closeSmtpModal()">
+  <div class="modal-box" style="width:500px">
+    <div class="modal-title">⚙️ SMTP Settings (Email)</div>
+    <div class="modal-sub">Gmail App Password συνιστάται. <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">Δημιουργία App Password</a></div>
+    <div class="smtp-grid" style="margin-top:14px">
+      <div>
+        <div class="tpl-label">SMTP Host</div>
+        <input class="tpl-input" id="smtp-host" value="smtp.gmail.com" placeholder="smtp.gmail.com">
+      </div>
+      <div>
+        <div class="tpl-label">Port</div>
+        <input class="tpl-input" id="smtp-port" value="587" type="number">
+      </div>
+      <div class="full">
+        <div class="tpl-label">Email (Gmail)</div>
+        <input class="tpl-input" id="smtp-user" type="email" placeholder="youremail@gmail.com">
+      </div>
+      <div class="full">
+        <div class="tpl-label">App Password</div>
+        <input class="tpl-input" id="smtp-pass" type="password" placeholder="xxxx xxxx xxxx xxxx">
+      </div>
+      <div class="full">
+        <div class="tpl-label">From Name</div>
+        <input class="tpl-input" id="smtp-name" placeholder="CreatorScan Outreach">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="testSmtp()" id="smtp-test-btn">Test Connection</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeSmtpModal()">Ακύρωση</button>
+      <button class="modal-btn modal-btn-save" onclick="saveSmtp()">Αποθήκευση</button>
+    </div>
+    <div id="smtp-msg" style="margin-top:8px;font-size:12px;font-weight:600;color:var(--green)"></div>
   </div>
 </div>
 
@@ -1809,9 +2101,26 @@ function creatorCard(c) {
   el.className = 'creator-card';
   el.dataset.platform = c.platform;
   el.style.cursor = 'pointer';
+  el._creatorData = c;
+  el.dataset.creatorId = c.id;
   el.onclick = (e) => {
-    // Don't open if clicking an action button/link/badge
     if (e.target.closest('.card-actions, .outreach-wrap, .status-dropdown')) return;
+    if (bulkMode) {
+      // Toggle selection
+      if (selectedCreators.has(c.id)) {
+        selectedCreators.delete(c.id);
+        el.classList.remove('selected');
+        const cb = el.querySelector('.card-checkbox');
+        if (cb) cb.checked = false;
+      } else {
+        selectedCreators.set(c.id, c);
+        el.classList.add('selected');
+        const cb = el.querySelector('.card-checkbox');
+        if (cb) cb.checked = true;
+      }
+      updateBulkBar();
+      return;
+    }
     openDrawer(c.id);
   };
 
@@ -1849,6 +2158,9 @@ function creatorCard(c) {
   const displayName = esc(c.display_name || c.username);
 
   el.innerHTML = `
+    <div class="card-select-wrap">
+      <input type="checkbox" class="card-checkbox" onclick="event.stopPropagation()">
+    </div>
     <div class="card-head">
       <div class="card-av-wrap">
         <div class="card-avatar">${avatarContent}</div>
@@ -1935,6 +2247,307 @@ async function startScan() {
       await loadCreators();
     }
   }, 1500);
+}
+
+// ── Bulk Select & Outreach ─────────────────────────────────────────────────────
+let bulkMode = false;
+let selectedCreators = new Map(); // id → creator data
+const EMAIL_TEMPLATES = {
+  collab: {
+    subject: "Collaboration opportunity — {{creator_name}} × [Your Brand]",
+    body: `Hi {{creator_name}},
+
+I came across your {{platform}} channel and I'm genuinely impressed by your {{niche}} content — especially how you connect with your {{followers}} followers.
+
+We're looking for authentic creators to collaborate with on [product/campaign], and you'd be a perfect fit.
+
+Would you be open to a quick chat about working together? I'd love to hear more about the kind of partnerships that interest you.
+
+Looking forward to connecting!
+
+Best,
+[Your Name]
+[Your Company]`
+  },
+  review: {
+    subject: "Free product for review — {{creator_name}}",
+    body: `Hey {{creator_name}},
+
+Love your {{platform}} content! We'd love to send you our [Product Name] for an honest review.
+
+No strings attached — if you like it, great! If not, you can say so. We believe in authentic reviews.
+
+Your {{niche}} audience would be a great fit for what we're building.
+
+Interested? Just reply and I'll send over more details + a complimentary unit.
+
+Cheers,
+[Your Name]`
+  },
+  sponsor: {
+    subject: "Sponsorship inquiry for {{creator_name}}",
+    body: `Hi {{creator_name}},
+
+I found your {{platform}} channel while looking for {{niche}} creators and I'd love to discuss a sponsorship opportunity.
+
+We're [Company] and we're looking for creators with engaged audiences — your {{followers}} community looks like an excellent match.
+
+The deal would be:
+• [Sponsorship details]
+• [Compensation]
+• Full creative freedom
+
+Reply if you're interested and we'll send over our media kit and rates.
+
+Best regards,
+[Your Name] | [Company]`
+  },
+  affiliate: {
+    subject: "Earn commission promoting [Product] — {{creator_name}}",
+    body: `Hi {{creator_name}},
+
+I noticed your {{platform}} channel and thought you might be interested in our affiliate program.
+
+As a {{niche}} creator with {{followers}} followers, you could earn [X]% commission on every sale through your unique link.
+
+• High commission rate
+• Monthly payouts
+• Dedicated affiliate manager
+
+No minimums, no exclusivity. Just share what you love and earn.
+
+Interested? Reply and I'll send your custom affiliate link within 24 hours.
+
+[Your Name]`
+  }
+};
+
+function toggleBulkMode() {
+  bulkMode = !bulkMode;
+  const grid = document.getElementById('creators-grid');
+  const bar  = document.getElementById('bulk-bar');
+  const btn  = document.getElementById('bulk-toggle-btn');
+  if (bulkMode) {
+    grid.classList.add('bulk-mode');
+    bar.classList.add('active');
+    btn.style.background = 'var(--accent)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--accent)';
+  } else {
+    exitBulkMode();
+  }
+}
+
+function exitBulkMode() {
+  bulkMode = false;
+  selectedCreators.clear();
+  document.getElementById('creators-grid').classList.remove('bulk-mode');
+  document.getElementById('bulk-bar').classList.remove('active');
+  const btn = document.getElementById('bulk-toggle-btn');
+  btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
+  document.querySelectorAll('.creator-card').forEach(c => {
+    c.classList.remove('selected');
+    const cb = c.querySelector('.card-checkbox');
+    if (cb) cb.checked = false;
+  });
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const count = selectedCreators.size;
+  document.getElementById('bulk-count-label').textContent = `${count} creator${count !== 1 ? 's' : ''} επιλεγμέν${count !== 1 ? 'οι' : 'ος'}`;
+  const withEmail = [...selectedCreators.values()].filter(c => c.email).length;
+  document.getElementById('bulk-send-btn').textContent = withEmail
+    ? `✉ Αποστολή (${withEmail} με email)`
+    : '✉ Αποστολή Outreach';
+}
+
+function bulkSelectAllEmail() {
+  document.querySelectorAll('.creator-card').forEach(card => {
+    const id = parseInt(card.dataset.creatorId);
+    const c = card._creatorData;
+    if (c && c.email) {
+      selectedCreators.set(id, c);
+      card.classList.add('selected');
+      const cb = card.querySelector('.card-checkbox');
+      if (cb) cb.checked = true;
+    }
+  });
+  updateBulkBar();
+}
+
+// ── Template Modal ─────────────────────────────────────────────────────────────
+function openTemplateModal() {
+  const withEmail = [...selectedCreators.values()].filter(c => c.email);
+  if (!withEmail.length) {
+    alert('Δεν υπάρχουν επιλεγμένοι creators με email. Κάνε "Επιλογή με Email" ή επίλεξε creators χειροκίνητα.');
+    return;
+  }
+  // Populate recipients
+  const rcptContainer = document.getElementById('tpl-recipients');
+  rcptContainer.innerHTML = '';
+  withEmail.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'tpl-recipient';
+    row.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      <span style="font-weight:700;color:var(--text)">${esc(c.display_name||c.username)}</span>
+      <span style="color:var(--text3);margin-left:auto">${esc(c.email)}</span>`;
+    rcptContainer.appendChild(row);
+  });
+  document.getElementById('tpl-rcpt-count').textContent = withEmail.length;
+  document.getElementById('tpl-send-count').textContent = `${withEmail.length} emails θα σταλούν`;
+  // Load default template if empty
+  if (!document.getElementById('tpl-subject').value) loadPreset('collab');
+  updatePreview();
+  document.getElementById('template-modal').hidden = false;
+}
+
+function closeTemplateModal() { document.getElementById('template-modal').hidden = true; }
+
+function loadPreset(key) {
+  const tpl = EMAIL_TEMPLATES[key];
+  if (!tpl) return;
+  document.getElementById('tpl-subject').value = tpl.subject;
+  document.getElementById('tpl-body').value = tpl.body;
+  updatePreview();
+}
+
+function insertVar(v) {
+  const ta = document.getElementById('tpl-body');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.substring(0, start) + v + ta.value.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + v.length;
+  ta.focus();
+  updatePreview();
+}
+
+function _renderPreview(template, creator) {
+  const followers = creator.followers || 0;
+  const folStr = followers >= 1e6 ? (followers/1e6).toFixed(1)+'M' :
+                 followers >= 1e3 ? (followers/1e3).toFixed(1)+'K' : String(followers);
+  return template
+    .replace(/{{creator_name}}/g,     creator.display_name || creator.username || '')
+    .replace(/{{creator_username}}/g, '@' + (creator.username || ''))
+    .replace(/{{platform}}/g,         (creator.platform || '').replace(/^\w/, c => c.toUpperCase()))
+    .replace(/{{followers}}/g,        folStr)
+    .replace(/{{niche}}/g,            creator.niche || '')
+    .replace(/{{profile_url}}/g,      creator.profile_url || '')
+    .replace(/{{email}}/g,            creator.email || '');
+}
+
+function updatePreview() {
+  const withEmail = [...selectedCreators.values()].filter(c => c.email);
+  const first = withEmail[0];
+  const body = document.getElementById('tpl-body').value;
+  const prev = document.getElementById('tpl-preview');
+  if (first && body) {
+    prev.textContent = _renderPreview(body, first);
+  } else {
+    prev.textContent = 'Γράψε κάτι στο body για preview…';
+  }
+}
+
+async function sendBulkEmails() {
+  const withEmail = [...selectedCreators.values()].filter(c => c.email);
+  if (!withEmail.length) return;
+  const subject  = document.getElementById('tpl-subject').value.trim();
+  const bodyHtml = document.getElementById('tpl-body').value.trim();
+  const dryRun   = document.getElementById('tpl-dry-run').checked;
+  if (!subject || !bodyHtml) { alert('Συμπλήρωσε Subject και Body!'); return; }
+
+  const btn = document.getElementById('tpl-send-btn');
+  btn.disabled = true;
+  btn.textContent = dryRun ? '⏳ Testing…' : '⏳ Αποστολή…';
+
+  try {
+    const resp = await fetch('/api/outreach/send-bulk', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        creator_ids: withEmail.map(c => c.id),
+        subject, body_html: bodyHtml, dry_run: dryRun
+      })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'Error');
+
+    const msg = dryRun
+      ? `✅ Dry run OK — ${data.sent} emails θα στέλνονταν`
+      : `✅ Εστάλησαν ${data.sent} emails! (${data.failed} failed)`;
+    alert(msg);
+
+    if (!dryRun && data.sent > 0) {
+      // Update outreach status in grid for sent creators
+      withEmail.forEach(c => {
+        if (!outreachData[c.id]) outreachData[c.id] = {};
+        outreachData[c.id].status = 'contacted';
+        const badge = document.querySelector(`.outreach-badge[onclick*="${c.id}"]`);
+        if (badge) {
+          const s = STATUS_CONFIG['contacted'];
+          badge.className = `outreach-badge ${s.cls}`;
+          badge.innerHTML = s.label;
+        }
+      });
+      closeTemplateModal();
+      exitBulkMode();
+    }
+  } catch(e) {
+    if (e.message.includes('SMTP not configured')) {
+      closeTemplateModal();
+      openSmtpModal();
+      alert('Πρέπει να ρυθμίσεις SMTP πρώτα!');
+    } else {
+      alert('Σφάλμα: ' + e.message);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Αποστολή';
+  }
+}
+
+// ── SMTP Settings ──────────────────────────────────────────────────────────────
+async function openSmtpModal() {
+  try {
+    const s = await fetch('/api/settings/smtp').then(r => r.json());
+    document.getElementById('smtp-host').value = s.host || 'smtp.gmail.com';
+    document.getElementById('smtp-port').value = s.port || 587;
+    document.getElementById('smtp-user').value = s.user || '';
+    document.getElementById('smtp-pass').value = s.password || '';
+    document.getElementById('smtp-name').value = s.from_name || 'CreatorScan Outreach';
+  } catch(e) {}
+  document.getElementById('smtp-modal').hidden = false;
+}
+function closeSmtpModal() { document.getElementById('smtp-modal').hidden = true; }
+
+async function saveSmtp() {
+  const data = {
+    host:      document.getElementById('smtp-host').value,
+    port:      parseInt(document.getElementById('smtp-port').value),
+    user:      document.getElementById('smtp-user').value,
+    password:  document.getElementById('smtp-pass').value,
+    from_name: document.getElementById('smtp-name').value,
+  };
+  await fetch('/api/settings/smtp', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  const msg = document.getElementById('smtp-msg');
+  msg.textContent = '✓ Αποθηκεύτηκε!'; msg.style.color = 'var(--green)';
+  setTimeout(() => { msg.textContent = ''; closeSmtpModal(); }, 1200);
+}
+
+async function testSmtp() {
+  const btn = document.getElementById('smtp-test-btn');
+  const msg = document.getElementById('smtp-msg');
+  btn.textContent = 'Testing…'; btn.disabled = true;
+  try {
+    await saveSmtp();
+    const r = await fetch('/api/settings/smtp/test', {method:'POST'}).then(r => r.json());
+    msg.textContent = r.msg || '✓ OK!'; msg.style.color = 'var(--green)';
+  } catch(e) {
+    msg.textContent = '✗ ' + (e.message || 'Failed'); msg.style.color = '#dc2626';
+  }
+  btn.textContent = 'Test Connection'; btn.disabled = false;
 }
 
 // ── Detail Drawer ──────────────────────────────────────────────────────────────

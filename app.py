@@ -9,9 +9,12 @@ import csv
 import io
 import json
 import os
+import smtplib
 import subprocess
 import sys
 import threading
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Optional
 
@@ -261,6 +264,157 @@ async def api_scan_status():
         "running": scan_state["running"],
         "found":   scan_state["found"],
         "log":     scan_state["log"][-30:],  # last 30 lines
+    }
+
+
+# ── SMTP Settings (stored in memory, persisted via .env or runtime) ──────────
+_smtp_settings: dict = {
+    "host":     os.getenv("SMTP_HOST",  "smtp.gmail.com"),
+    "port":     int(os.getenv("SMTP_PORT", "587")),
+    "user":     os.getenv("SMTP_USER",  ""),
+    "password": os.getenv("SMTP_PASS",  ""),
+    "from_name": os.getenv("SMTP_FROM_NAME", "CreatorScan Outreach"),
+}
+
+
+@app.get("/api/settings/smtp")
+async def api_get_smtp():
+    """Returns SMTP settings (password masked)."""
+    s = dict(_smtp_settings)
+    s["password"] = "••••••••" if s["password"] else ""
+    return s
+
+
+@app.post("/api/settings/smtp")
+async def api_set_smtp(body: dict = Body(...)):
+    """Update SMTP settings at runtime."""
+    for k in ("host", "port", "user", "password", "from_name"):
+        if k in body and body[k] != "••••••••":
+            _smtp_settings[k] = body[k]
+    return {"ok": True}
+
+
+@app.post("/api/settings/smtp/test")
+async def api_test_smtp():
+    """Send a test email to the configured SMTP user."""
+    s = _smtp_settings
+    if not s["user"] or not s["password"]:
+        raise HTTPException(400, "SMTP not configured")
+    try:
+        msg = MIMEMultipart()
+        msg["From"]    = f"{s['from_name']} <{s['user']}>"
+        msg["To"]      = s["user"]
+        msg["Subject"] = "✅ CreatorScan SMTP Test"
+        msg.attach(MIMEText("<h2>SMTP works!</h2><p>CreatorScan outreach is configured correctly.</p>", "html"))
+        with smtplib.SMTP(s["host"], int(s["port"]), timeout=15) as srv:
+            srv.starttls()
+            srv.login(s["user"], s["password"])
+            srv.sendmail(s["user"], s["user"], msg.as_string())
+        return {"ok": True, "msg": f"Test email sent to {s['user']}"}
+    except Exception as e:
+        raise HTTPException(400, str(e))
+
+
+def _render_template(template: str, creator: dict) -> str:
+    """Replace {{variables}} in email template with creator data."""
+    followers = creator.get("followers", 0) or 0
+    if followers >= 1_000_000:
+        fol_str = f"{followers/1_000_000:.1f}M"
+    elif followers >= 1_000:
+        fol_str = f"{followers/1_000:.1f}K"
+    else:
+        fol_str = str(followers)
+
+    replacements = {
+        "{{creator_name}}":     creator.get("display_name") or creator.get("username", ""),
+        "{{creator_username}}": f"@{creator.get('username', '')}",
+        "{{platform}}":         creator.get("platform", "").capitalize(),
+        "{{followers}}":        fol_str,
+        "{{niche}}":            creator.get("niche", ""),
+        "{{profile_url}}":      creator.get("profile_url", ""),
+        "{{email}}":            creator.get("email", ""),
+    }
+    result = template
+    for key, val in replacements.items():
+        result = result.replace(key, str(val or ""))
+    return result
+
+
+@app.post("/api/outreach/send-bulk")
+async def api_send_bulk(body: dict = Body(...)):
+    """
+    Send bulk outreach emails to a list of creators.
+    Body: {creator_ids: [int], subject: str, body_html: str, dry_run: bool}
+    """
+    s = _smtp_settings
+    if not s["user"] or not s["password"]:
+        raise HTTPException(400, "SMTP not configured — go to Settings first")
+
+    creator_ids: list[int] = body.get("creator_ids", [])
+    subject_tpl: str       = body.get("subject", "")
+    body_tpl:    str       = body.get("body_html", "")
+    dry_run:     bool      = body.get("dry_run", False)
+
+    if not creator_ids:
+        raise HTTPException(400, "No creator_ids provided")
+    if not subject_tpl or not body_tpl:
+        raise HTTPException(400, "subject and body_html required")
+    if len(creator_ids) > 100:
+        raise HTTPException(400, "Max 100 emails per batch")
+
+    results = []
+    sent = 0
+    failed = 0
+
+    try:
+        smtp_conn = None if dry_run else smtplib.SMTP(s["host"], int(s["port"]), timeout=20)
+        if smtp_conn:
+            smtp_conn.starttls()
+            smtp_conn.login(s["user"], s["password"])
+
+        for cid in creator_ids:
+            creator = db.get_creator_by_id(cid)
+            if not creator:
+                results.append({"id": cid, "status": "not_found"})
+                continue
+            email = creator.get("email")
+            if not email:
+                results.append({"id": cid, "status": "no_email", "name": creator.get("display_name")})
+                failed += 1
+                continue
+
+            rendered_subject = _render_template(subject_tpl, creator)
+            rendered_body    = _render_template(body_tpl, creator)
+
+            if dry_run:
+                results.append({"id": cid, "status": "dry_run", "to": email,
+                                 "subject": rendered_subject, "name": creator.get("display_name")})
+                sent += 1
+                continue
+
+            try:
+                msg = MIMEMultipart("alternative")
+                msg["From"]    = f"{s['from_name']} <{s['user']}>"
+                msg["To"]      = email
+                msg["Subject"] = rendered_subject
+                msg.attach(MIMEText(rendered_body, "html"))
+                smtp_conn.sendmail(s["user"], email, msg.as_string())
+                # Mark as contacted in outreach
+                db.upsert_outreach(cid, status="contacted")
+                results.append({"id": cid, "status": "sent", "to": email, "name": creator.get("display_name")})
+                sent += 1
+            except Exception as e:
+                results.append({"id": cid, "status": "error", "to": email, "error": str(e)})
+                failed += 1
+
+        if smtp_conn:
+            smtp_conn.quit()
+    except Exception as e:
+        raise HTTPException(500, f"SMTP connection failed: {e}")
+
+    return {
+        "sent": sent, "failed": failed, "dry_run": dry_run,
+        "results": results
     }
 
 
