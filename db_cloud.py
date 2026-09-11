@@ -105,6 +105,27 @@ def query_creators(platform=None, niche=None, min_followers=2000,
     return result.data or []
 
 
+def get_creator_by_id(creator_id: int) -> dict | None:
+    """Επιστρέφει έναν creator με outreach data (για detail page)."""
+    client = get_client()
+    result = (client.table("cs_creators")
+              .select("*")
+              .eq("id", creator_id)
+              .execute())
+    if not result.data:
+        return None
+    c = result.data[0]
+    # Attach outreach
+    o_result = (client.table("cs_outreach")
+                .select("*")
+                .eq("creator_id", creator_id)
+                .execute())
+    o = o_result.data[0] if o_result.data else {}
+    c["outreach_status"] = o.get("status", "new")
+    c["outreach_notes"]  = o.get("notes", "")
+    return c
+
+
 def count_creators(platform=None, niche=None, min_followers=2000,
                    max_followers=100_000, has_email=None, language=None,
                    search=None) -> int:

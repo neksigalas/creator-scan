@@ -851,6 +851,206 @@ input, select { font-family: inherit; }
 .card-btn-notes svg { opacity: .6; }
 .card-btn-notes:hover svg { opacity: 1; }
 
+/* ── DETAIL DRAWER ──────────────────────────────────────────────────────────── */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.45);
+  z-index: 600;
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 480px;
+  max-width: 100vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 40px rgba(15,23,42,.18);
+  z-index: 601;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.drawer-close {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: all .12s;
+}
+.drawer-close:hover { border-color: var(--accent); color: var(--accent); }
+.drawer-close svg { width: 16px; height: 16px; }
+.drawer-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+/* Hero section */
+.d-hero {
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.d-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 800; color: #fff;
+  overflow: hidden; flex-shrink: 0;
+  border: 3px solid var(--border);
+}
+.d-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.d-hero-info { flex: 1; min-width: 0; }
+.d-name { font-size: 19px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.d-username { font-size: 13px; color: var(--text3); font-weight: 500; margin-bottom: 8px; }
+.d-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* Section */
+.d-section { display: flex; flex-direction: column; gap: 8px; }
+.d-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text3);
+  border-bottom: 1px solid var(--border); padding-bottom: 6px;
+}
+
+/* Stats grid */
+.d-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.d-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 10px 8px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.d-stat-val { font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1; }
+.d-stat-lbl { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+.d-stat-er { border-bottom: 3px solid transparent; }
+.d-stat-er.er-high   { border-bottom-color: #059669; }
+.d-stat-er.er-medium { border-bottom-color: #d97706; }
+.d-stat-er.er-low    { border-bottom-color: #dc2626; }
+
+/* Bio */
+.d-bio {
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+  white-space: pre-line;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  max-height: 180px; overflow-y: auto;
+}
+
+/* Info rows */
+.d-info-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-size: 13px;
+}
+.d-info-icon { flex-shrink: 0; width: 16px; height: 16px; color: var(--text3); display: flex; align-items: center; }
+.d-info-icon svg { width: 15px; height: 15px; fill: currentColor; }
+.d-info-label { color: var(--text3); font-weight: 600; font-size: 11px; white-space: nowrap; }
+.d-info-val { flex: 1; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d-copy-btn {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 10px; font-weight: 700; color: var(--text2);
+  cursor: pointer; transition: all .12s;
+}
+.d-copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tags */
+.d-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.d-tag {
+  padding: 3px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px; font-weight: 600; color: var(--text2);
+}
+
+/* Outreach inside drawer */
+.d-outreach-row {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.d-outreach-sel {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  outline: none; cursor: pointer;
+}
+.d-outreach-sel:focus { border-color: var(--accent); }
+.d-notes-area {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 12px; font-family: inherit; line-height: 1.55;
+  resize: vertical; outline: none;
+  transition: border-color .12s;
+}
+.d-notes-area:focus { border-color: var(--accent); }
+.d-save-btn {
+  padding: 8px 16px;
+  background: var(--accent);
+  border: none; border-radius: var(--r-sm);
+  color: #fff; font-size: 12px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: opacity .12s;
+  align-self: flex-end;
+}
+.d-save-btn:hover { opacity: .88; }
+.d-save-ok { color: var(--green); font-size: 11px; font-weight: 700; opacity: 0; transition: opacity .3s; }
+
+/* Open profile button */
+.d-open-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  border: none; border-radius: var(--r-sm);
+  color: #fff; font-size: 13px; font-weight: 700; font-family: inherit;
+  cursor: pointer; text-decoration: none;
+  transition: opacity .12s, transform .1s;
+}
+.d-open-btn:hover { opacity: .9; transform: translateY(-1px); }
+.d-open-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+.drawer-loading {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 12px;
+}
+
 [hidden] { display: none !important; }
 </style>
 </head>
@@ -1164,6 +1364,27 @@ input, select { font-family: inherit; }
     <div class="list-modal-items" id="list-modal-items"></div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" onclick="closeListModal()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CREATOR DETAIL DRAWER ─────────────────────────────────────────────── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="detail-drawer" role="dialog" aria-modal="true">
+  <div class="drawer-header">
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Κλείσιμο">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="drawer-title" id="drawer-title">Creator Detail</div>
+    <a href="#" id="drawer-open-link" target="_blank" rel="noopener" class="card-btn" style="padding:6px 10px;font-size:11px;white-space:nowrap;text-decoration:none;display:flex;align-items:center;gap:4px">
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+      Άνοιγμα
+    </a>
+  </div>
+  <div class="drawer-body" id="drawer-body">
+    <div class="drawer-loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Φόρτωση…</div>
     </div>
   </div>
 </div>
@@ -1587,6 +1808,12 @@ function creatorCard(c) {
   const el = document.createElement('div');
   el.className = 'creator-card';
   el.dataset.platform = c.platform;
+  el.style.cursor = 'pointer';
+  el.onclick = (e) => {
+    // Don't open if clicking an action button/link/badge
+    if (e.target.closest('.card-actions, .outreach-wrap, .status-dropdown')) return;
+    openDrawer(c.id);
+  };
 
   const p = PLATFORM[c.platform] || { label: c.platform, color: '#64748b', badgeCls: 'badge-niche', svg: '' };
   const initials = (c.display_name || c.username || '?')[0].toUpperCase();
@@ -1709,6 +1936,199 @@ async function startScan() {
     }
   }, 1500);
 }
+
+// ── Detail Drawer ──────────────────────────────────────────────────────────────
+let drawerCreatorId = null;
+
+async function openDrawer(creatorId) {
+  drawerCreatorId = creatorId;
+  const overlay = document.getElementById('drawer-overlay');
+  const drawer  = document.getElementById('detail-drawer');
+  const body    = document.getElementById('drawer-body');
+  const title   = document.getElementById('drawer-title');
+  const link    = document.getElementById('drawer-open-link');
+
+  // Show skeleton
+  body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><div class="loading-text">Φόρτωση…</div></div>';
+  overlay.classList.add('open');
+  drawer.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  try {
+    const c = await fetch(`/api/creators/${creatorId}`).then(r => r.json());
+    title.textContent = c.display_name || c.username;
+    link.href = c.profile_url || '#';
+
+    const p = PLATFORM[c.platform] || { label: c.platform, color: '#64748b', badgeCls: 'badge-niche', svg: '' };
+    const initials = (c.display_name || c.username || '?')[0].toUpperCase();
+    const avatarHtml = c.avatar_url
+      ? `<img src="${esc(c.avatar_url)}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='${initials}'">`
+      : initials;
+
+    const er = c.engagement_rate;
+    let erCls = 'er-none', dStatErCls = '', erLabel = '—';
+    if (er != null) {
+      erLabel = er.toFixed(2) + '%';
+      if (er >= 5)      { erCls = 'er-high';   dStatErCls = 'er-high'; }
+      else if (er >= 2) { erCls = 'er-medium'; dStatErCls = 'er-medium'; }
+      else              { erCls = 'er-low';    dStatErCls = 'er-low'; }
+    }
+
+    // Tags
+    let tags = [];
+    try { tags = JSON.parse(c.tags || '[]'); } catch(e) {}
+    const tagsHtml = tags.length
+      ? `<div class="d-section">
+          <div class="d-section-title">Tags</div>
+          <div class="d-tags">${tags.slice(0,20).map(t => `<span class="d-tag">${esc(t)}</span>`).join('')}</div>
+        </div>`
+      : '';
+
+    const currentStatus = c.outreach_status || 'new';
+    const statusOptions = Object.entries(STATUS_CONFIG).map(([val, cfg]) =>
+      `<option value="${val}" ${val === currentStatus ? 'selected' : ''}>${cfg.label}</option>`
+    ).join('');
+
+    // Email row
+    const emailHtml = c.email
+      ? `<div class="d-info-row">
+          <div class="d-info-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+          <span class="d-info-label">Email</span>
+          <span class="d-info-val" id="d-email-val">${esc(c.email)}</span>
+          <button class="d-copy-btn" onclick="copyEmail()">Αντιγραφή</button>
+          <a href="mailto:${esc(c.email)}" class="d-copy-btn" style="text-decoration:none">Αποστολή</a>
+        </div>`
+      : '';
+
+    const countryLang = [c.country, c.language].filter(Boolean).map(esc).join(' · ');
+
+    body.innerHTML = `
+      <!-- Hero -->
+      <div class="d-hero">
+        <div class="d-avatar" style="border-color:${p.color}40">${avatarHtml}</div>
+        <div class="d-hero-info">
+          <div class="d-name">${esc(c.display_name || c.username)}</div>
+          <div class="d-username">@${esc(c.username)}</div>
+          <div class="d-badges">
+            <span class="badge ${p.badgeCls}">${p.svg}${p.label}</span>
+            ${c.niche ? `<span class="badge badge-niche">${esc(c.niche)}</span>` : ''}
+            ${c.language ? `<span class="badge badge-lang">${esc((c.language||'').toUpperCase())}</span>` : ''}
+            ${c.has_email ? `<span class="badge badge-email"><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Email</span>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="d-section">
+        <div class="d-section-title">Στατιστικά</div>
+        <div class="d-stats">
+          <div class="d-stat">
+            <div class="d-stat-val">${fmtNum(c.followers)}</div>
+            <div class="d-stat-lbl">Followers</div>
+          </div>
+          <div class="d-stat">
+            <div class="d-stat-val">${fmtNum(c.avg_views)}</div>
+            <div class="d-stat-lbl">Avg Views</div>
+          </div>
+          <div class="d-stat d-stat-er ${dStatErCls}">
+            <div class="d-stat-val"><span class="er-badge ${erCls}">${erLabel}</span></div>
+            <div class="d-stat-lbl">Eng. Rate</div>
+          </div>
+          <div class="d-stat">
+            <div class="d-stat-val">${fmtNum(c.posts_count)}</div>
+            <div class="d-stat-lbl">Videos</div>
+          </div>
+          ${c.following != null ? `<div class="d-stat"><div class="d-stat-val">${fmtNum(c.following)}</div><div class="d-stat-lbl">Following</div></div>` : ''}
+          ${countryLang ? `<div class="d-stat"><div class="d-stat-val" style="font-size:13px">${countryLang}</div><div class="d-stat-lbl">Χώρα / Γλώσσα</div></div>` : ''}
+        </div>
+      </div>
+
+      <!-- Email -->
+      ${emailHtml ? `<div class="d-section"><div class="d-section-title">Επικοινωνία</div>${emailHtml}</div>` : ''}
+
+      <!-- Bio -->
+      ${c.bio ? `<div class="d-section"><div class="d-section-title">Bio</div><div class="d-bio">${esc(c.bio)}</div></div>` : ''}
+
+      <!-- Tags -->
+      ${tagsHtml}
+
+      <!-- Outreach CRM -->
+      <div class="d-section">
+        <div class="d-section-title">Outreach CRM</div>
+        <div class="d-outreach-row">
+          <select class="d-outreach-sel" id="d-status-sel" onchange="drawerSetStatus(this.value)">
+            ${statusOptions}
+          </select>
+        </div>
+        <textarea class="d-notes-area" id="d-notes-area" placeholder="Σημειώσεις outreach…">${esc(c.outreach_notes || '')}</textarea>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+          <span class="d-save-ok" id="d-save-ok">✓ Αποθηκεύτηκε</span>
+          <button class="d-save-btn" onclick="drawerSaveNotes()">Αποθήκευση</button>
+        </div>
+      </div>
+
+      <!-- Open profile -->
+      <a href="${esc(c.profile_url || '#')}" target="_blank" rel="noopener" class="d-open-btn">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Άνοιγμα στο ${p.label}
+      </a>
+    `;
+  } catch(err) {
+    body.innerHTML = `<div style="color:var(--text3);padding:20px;text-align:center">Σφάλμα φόρτωσης</div>`;
+  }
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('detail-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+  drawerCreatorId = null;
+}
+
+function copyEmail() {
+  const val = document.getElementById('d-email-val')?.textContent;
+  if (val) { navigator.clipboard.writeText(val); }
+  const btn = event.currentTarget;
+  const orig = btn.textContent;
+  btn.textContent = '✓';
+  setTimeout(() => btn.textContent = orig, 1500);
+}
+
+async function drawerSetStatus(status) {
+  if (!drawerCreatorId) return;
+  await fetch(`/api/outreach/${drawerCreatorId}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({status})
+  });
+  if (!outreachData[drawerCreatorId]) outreachData[drawerCreatorId] = {};
+  outreachData[drawerCreatorId].status = status;
+  // Update card badge in the grid
+  const badge = document.querySelector(`.outreach-badge[onclick*="${drawerCreatorId}"]`);
+  if (badge) {
+    const s = STATUS_CONFIG[status];
+    badge.className = `outreach-badge ${s.cls}`;
+    badge.innerHTML = s.label;
+  }
+}
+
+async function drawerSaveNotes() {
+  if (!drawerCreatorId) return;
+  const notes = document.getElementById('d-notes-area').value;
+  await fetch(`/api/outreach/${drawerCreatorId}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({notes})
+  });
+  if (!outreachData[drawerCreatorId]) outreachData[drawerCreatorId] = {};
+  outreachData[drawerCreatorId].notes = notes;
+  // Flash save indicator
+  const ok = document.getElementById('d-save-ok');
+  if (ok) { ok.style.opacity = '1'; setTimeout(() => ok.style.opacity = '0', 2000); }
+}
+
+// Keyboard: Escape closes drawer
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
 init();

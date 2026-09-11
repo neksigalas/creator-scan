@@ -198,6 +198,15 @@ async def api_creators(
     return {"creators": creators, "total": total, "offset": offset, "limit": limit}
 
 
+@app.get("/api/creators/{creator_id}")
+async def api_creator_detail(creator_id: int):
+    """Single creator detail — για το detail drawer."""
+    c = db.get_creator_by_id(creator_id)
+    if not c:
+        raise HTTPException(status_code=404, detail="Creator not found")
+    return c
+
+
 @app.get("/api/export/csv")
 async def api_export_csv(
     platform:     Optional[str] = None,
