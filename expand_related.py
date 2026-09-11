@@ -87,7 +87,7 @@ for round_num in range(1, ROUNDS + 1):
                 added_this_round += 1
 
     total_added += added_this_round
-    print(f"  ✓ Added {added_this_round} creators this round")
+    print(f"  + Added {added_this_round} creators this round")
     current_seeds = all_related_ids  # next round seeds = this round's related
 
 after = get_stats()

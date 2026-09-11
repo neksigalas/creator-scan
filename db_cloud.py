@@ -142,19 +142,20 @@ def count_creators(platform=None, niche=None, min_followers=2000,
 
 def get_stats() -> dict:
     client = get_client()
-    total_r   = client.table("cs_creators").select("id", count="exact").execute()
-    email_r   = client.table("cs_creators").select("id", count="exact").eq("has_email", 1).execute()
-    platform_r = client.table("cs_creators").select("platform").execute()
-    niche_r    = client.table("cs_creators").select("niche").execute()
-
+    total_r    = client.table("cs_creators").select("id", count="exact").execute()
+    email_r    = client.table("cs_creators").select("id", count="exact").eq("has_email", 1).execute()
     total      = total_r.count or 0
     with_email = email_r.count or 0
 
+    # Count per platform using individual count queries (avoids 1k row limit)
     by_platform: dict[str, int] = {}
-    for row in (platform_r.data or []):
-        p = row["platform"]
-        by_platform[p] = by_platform.get(p, 0) + 1
+    for p in ["youtube", "twitch", "tiktok", "instagram"]:
+        r = client.table("cs_creators").select("id", count="exact").eq("platform", p).execute()
+        if r.count:
+            by_platform[p] = r.count
 
+    # Niche counts — fetch all with high limit
+    niche_r = client.table("cs_creators").select("niche").limit(10000).execute()
     niche_counts: dict[str, int] = {}
     for row in (niche_r.data or []):
         n = row["niche"] or "Other"
