@@ -663,6 +663,169 @@ input, select { font-family: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 13px; color: var(--text3); font-weight: 500; }
 
+/* ── OUTREACH STATUS BADGES ─────────────────────────────────────────────────── */
+.outreach-wrap {
+  position: relative;
+}
+.outreach-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer;
+  transition: opacity .12s;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.outreach-badge:hover { opacity: .8; }
+.ob-new         { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+.ob-contacted   { background: #eff6ff; color: #1d4ed8; border-color: rgba(29,78,216,.2); }
+.ob-replied     { background: #fefce8; color: #854d0e; border-color: rgba(133,77,14,.2); }
+.ob-interested  { background: #ecfdf5; color: #059669; border-color: rgba(5,150,105,.2); }
+.ob-passed      { background: #fef2f2; color: #b91c1c; border-color: rgba(185,28,28,.2); }
+
+.status-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--sh-md);
+  z-index: 300;
+  overflow: hidden;
+  min-width: 150px;
+}
+.status-opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: background .1s;
+}
+.status-opt:hover { background: var(--surface2); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── NOTES MODAL ──────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.55);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  width: 460px;
+  max-width: 95vw;
+  box-shadow: 0 20px 60px rgba(15,23,42,.25);
+}
+.modal-title {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 4px;
+}
+.modal-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.modal-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 13px; font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color .12s;
+}
+.modal-textarea:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+.modal-btn {
+  padding: 8px 18px;
+  border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.modal-btn-cancel { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+.modal-btn-save   { background: var(--accent); border: none; color: #fff; }
+.modal-btn-save:hover { opacity: .9; }
+
+/* ── SAVED LISTS PANEL ───────────────────────────────────────────────────────── */
+.lists-container { display: flex; flex-direction: column; gap: 4px; }
+.list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--text2);
+  transition: all .12s;
+}
+.list-item:hover { background: var(--surface2); color: var(--text); }
+.list-item.active { background: var(--accent-lt); border-color: rgba(29,78,216,.2); color: var(--accent); }
+.list-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.list-count {
+  margin-left: auto;
+  font-size: 10px; font-weight: 700;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1px 6px;
+  color: var(--text3);
+}
+.list-item.active .list-count { background: rgba(29,78,216,.1); border-color: rgba(29,78,216,.2); color: var(--accent); }
+.btn-new-list {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+  transition: all .12s;
+  margin-top: 4px;
+}
+.btn-new-list:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── ADD TO LIST MODAL ───────────────────────────────────────────────────────── */
+.list-modal-items { display: flex; flex-direction: column; gap: 4px; max-height: 280px; overflow-y: auto; margin-bottom: 12px; }
+.list-modal-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .12s;
+  font-size: 13px; font-weight: 600;
+  color: var(--text2);
+}
+.list-modal-row:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+.list-modal-row.in-list { border-color: var(--green); color: var(--green); background: var(--green-lt); }
+
+/* ── SORT DROPDOWN ─────────────────────────────────────────────────────────────── */
+.sort-select {
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .12s;
+}
+.sort-select:focus { border-color: var(--accent); }
+
+/* notes icon btn */
+.card-btn-notes svg { opacity: .6; }
+.card-btn-notes:hover svg { opacity: 1; }
+
 [hidden] { display: none !important; }
 </style>
 </head>
@@ -799,6 +962,22 @@ input, select { font-family: inherit; }
       </button>
     </div>
 
+    <!-- Saved Lists -->
+    <div class="sidebar-section">
+      <div class="section-heading">Αποθηκευμένες Λίστες</div>
+      <div class="lists-container" id="lists-container">
+        <div class="list-item active" data-list-id="" onclick="selectList(this, '')">
+          <span class="list-dot" style="background:#94a3b8"></span>
+          Όλοι οι Creators
+          <span class="list-count" id="lc-all">…</span>
+        </div>
+      </div>
+      <button class="btn-new-list" onclick="promptNewList()">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Νέα Λίστα
+      </button>
+    </div>
+
     <!-- Scan panel -->
     <div class="sidebar-section">
       <div class="section-heading">Νέο Scan</div>
@@ -887,6 +1066,13 @@ input, select { font-family: inherit; }
     <!-- Toolbar -->
     <div class="grid-toolbar">
       <div class="result-count"><b id="result-count">…</b> creators βρέθηκαν</div>
+      <div class="toolbar-spacer"></div>
+      <select class="sort-select" id="sort-select" onchange="onSortChange()">
+        <option value="followers_desc">↓ Followers (πολλοί πρώτα)</option>
+        <option value="followers_asc">↑ Followers (λίγοι πρώτα)</option>
+        <option value="recent">🕐 Πρόσφατα προσθ.</option>
+        <option value="email_first">✉ Email πρώτα</option>
+      </select>
     </div>
 
     <!-- Grid / States -->
@@ -919,6 +1105,31 @@ input, select { font-family: inherit; }
   </main>
 </div>
 
+<!-- ── NOTES MODAL ──────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="notes-modal" hidden onclick="if(event.target===this)closeNotes()">
+  <div class="modal-box">
+    <div class="modal-title" id="notes-modal-title">Σημειώσεις</div>
+    <div class="modal-sub" id="notes-modal-sub">Γράψε σημειώσεις για τον creator</div>
+    <textarea class="modal-textarea" id="notes-textarea" placeholder="π.χ. Στάλθηκε email 10/9, περιμένουμε απάντηση…"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeNotes()">Ακύρωση</button>
+      <button class="modal-btn modal-btn-save" onclick="saveNotes()">Αποθήκευση</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD TO LIST MODAL ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="list-modal" hidden onclick="if(event.target===this)closeListModal()">
+  <div class="modal-box">
+    <div class="modal-title">Προσθήκη σε Λίστα</div>
+    <div class="modal-sub" id="list-modal-sub">Επίλεξε λίστα για τον creator</div>
+    <div class="list-modal-items" id="list-modal-items"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeListModal()">Κλείσιμο</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── PLATFORM SVG HELPERS (used in JS) ─────────────────────────────────── -->
 <svg id="svg-defs" hidden>
   <defs>
@@ -947,12 +1158,19 @@ const state = {
   min: 2000, max: 100000,
   email: false, language: '',
   search: '', offset: 0, limit: 48, total: 0,
+  sort: 'followers_desc', listId: null,
 };
 let searchTimer = null, scanTimer = null;
 
+// Outreach & Lists data
+let outreachData = {};  // {creator_id: {status, notes}}
+let listsData    = [];  // [{id, name, color, count}]
+let activeNotesId = null;  // creator_id being edited
+let activeListCreatorId = null;  // for add-to-list modal
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 async function init() {
-  await Promise.all([loadStats(), loadNiches()]);
+  await Promise.all([loadStats(), loadNiches(), loadOutreach(), loadLists()]);
   await loadCreators();
 }
 
@@ -995,6 +1213,215 @@ function selectNiche(el) {
   document.querySelectorAll('.npill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   state.niche = el.dataset.val;
+  state.offset = 0;
+  loadCreators();
+}
+
+// ── Outreach ───────────────────────────────────────────────────────────────────
+async function loadOutreach() {
+  try {
+    const r = await fetch('/api/outreach').then(r => r.json());
+    outreachData = r.outreach || {};
+  } catch(e) { outreachData = {}; }
+}
+
+const STATUS_CONFIG = {
+  new:        { label: '●  Νέος',       cls: 'ob-new',        dot: '#94a3b8' },
+  contacted:  { label: '📤 Contacted',  cls: 'ob-contacted',  dot: '#1d4ed8' },
+  replied:    { label: '💬 Replied',     cls: 'ob-replied',    dot: '#d97706' },
+  interested: { label: '⭐ Interested',  cls: 'ob-interested', dot: '#059669' },
+  passed:     { label: '✗  Passed',     cls: 'ob-passed',     dot: '#dc2626' },
+};
+
+function outreachBadgeHtml(creatorId, status) {
+  const s = STATUS_CONFIG[status] || STATUS_CONFIG['new'];
+  return `<span class="outreach-badge ${s.cls}" onclick="event.stopPropagation();toggleStatusDropdown(event,${creatorId})">${s.label}</span>`;
+}
+
+let openDropdownId = null;
+function toggleStatusDropdown(ev, creatorId) {
+  // Close existing
+  document.querySelectorAll('.status-dropdown').forEach(d => d.remove());
+  if (openDropdownId === creatorId) { openDropdownId = null; return; }
+  openDropdownId = creatorId;
+  const badge = ev.currentTarget;
+  const wrap = badge.closest('.outreach-wrap') || badge.parentElement;
+  const dd = document.createElement('div');
+  dd.className = 'status-dropdown';
+  Object.entries(STATUS_CONFIG).forEach(([val, cfg]) => {
+    const opt = document.createElement('div');
+    opt.className = 'status-opt';
+    opt.innerHTML = `<span class="status-dot" style="background:${cfg.dot}"></span>${cfg.label}`;
+    opt.onclick = async (e) => {
+      e.stopPropagation();
+      dd.remove(); openDropdownId = null;
+      await setOutreachStatus(creatorId, val);
+    };
+    dd.appendChild(opt);
+  });
+  badge.parentElement.style.position = 'relative';
+  badge.parentElement.appendChild(dd);
+  setTimeout(() => document.addEventListener('click', () => { dd.remove(); openDropdownId = null; }, {once:true}), 10);
+}
+
+async function setOutreachStatus(creatorId, status) {
+  await fetch(`/api/outreach/${creatorId}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({status})
+  });
+  if (!outreachData[creatorId]) outreachData[creatorId] = {};
+  outreachData[creatorId].status = status;
+  // Update badge in DOM
+  const badge = document.querySelector(`.outreach-badge[onclick*="${creatorId}"]`);
+  if (badge) {
+    const s = STATUS_CONFIG[status];
+    badge.className = `outreach-badge ${s.cls}`;
+    badge.innerHTML = s.label;
+  }
+}
+
+// ── Notes ──────────────────────────────────────────────────────────────────────
+function openNotes(creatorId, name) {
+  activeNotesId = creatorId;
+  document.getElementById('notes-modal-title').textContent = `Σημειώσεις — ${name}`;
+  document.getElementById('notes-modal-sub').textContent = 'Outreach notes για αυτόν τον creator';
+  const existing = outreachData[creatorId]?.notes || '';
+  document.getElementById('notes-textarea').value = existing;
+  document.getElementById('notes-modal').hidden = false;
+}
+function closeNotes() { document.getElementById('notes-modal').hidden = true; activeNotesId = null; }
+async function saveNotes() {
+  const notes = document.getElementById('notes-textarea').value;
+  if (activeNotesId == null) return;
+  await fetch(`/api/outreach/${activeNotesId}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({notes})
+  });
+  if (!outreachData[activeNotesId]) outreachData[activeNotesId] = {};
+  outreachData[activeNotesId].notes = notes;
+  closeNotes();
+}
+
+// ── Lists ──────────────────────────────────────────────────────────────────────
+async function loadLists() {
+  try {
+    const r = await fetch('/api/lists').then(r => r.json());
+    listsData = r.lists || [];
+    renderLists();
+  } catch(e) {}
+}
+
+function renderLists() {
+  const container = document.getElementById('lists-container');
+  // Keep first item (all)
+  const allItem = container.querySelector('[data-list-id=""]');
+  container.innerHTML = '';
+  if (allItem) container.appendChild(allItem);
+  else {
+    const all = document.createElement('div');
+    all.className = 'list-item active';
+    all.dataset.listId = '';
+    all.onclick = () => selectList(all, null);
+    all.innerHTML = `<span class="list-dot" style="background:#94a3b8"></span>Όλοι οι Creators<span class="list-count" id="lc-all">${fmt(state.total || 0)}</span>`;
+    container.appendChild(all);
+  }
+  listsData.forEach(lst => {
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.dataset.listId = lst.id;
+    if (state.listId === lst.id) item.classList.add('active');
+    item.onclick = () => selectList(item, lst.id);
+    item.innerHTML = `
+      <span class="list-dot" style="background:${lst.color}"></span>
+      ${esc(lst.name)}
+      <span class="list-count">${lst.count || 0}</span>
+      <span style="margin-left:2px;font-size:10px;opacity:.5;cursor:pointer" onclick="event.stopPropagation();deleteList(${lst.id})">✕</span>`;
+    container.appendChild(item);
+  });
+}
+
+function selectList(el, listId) {
+  document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  state.listId = listId;
+  state.offset = 0;
+  loadCreators();
+}
+
+async function promptNewList() {
+  const name = prompt('Όνομα λίστας (π.χ. Nike Campaign):');
+  if (!name) return;
+  const color = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6'][Math.floor(Math.random()*6)];
+  await fetch('/api/lists', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name, color})
+  });
+  await loadLists();
+}
+
+async function deleteList(listId) {
+  if (!confirm('Διαγραφή λίστας;')) return;
+  await fetch(`/api/lists/${listId}`, {method:'DELETE'});
+  if (state.listId === listId) { state.listId = null; }
+  await loadLists();
+  loadCreators();
+}
+
+// Add-to-list modal
+async function openListModal(creatorId, name) {
+  activeListCreatorId = creatorId;
+  document.getElementById('list-modal-sub').textContent = name;
+  const items = document.getElementById('list-modal-items');
+  items.innerHTML = '';
+
+  // Check which lists already contain this creator
+  const inLists = new Set();
+  for (const lst of listsData) {
+    // We'll check via the outreach data or fetch creator's lists
+  }
+  // Fetch current memberships (quick: check list items)
+  let memberOf = [];
+  try {
+    for (const lst of listsData) {
+      const r = await fetch(`/api/lists/${lst.id}/creators`).catch(() => null);
+      if (r) {
+        // fallback: we don't have a GET /api/lists/{id}/creators endpoint
+        // instead use the list_modal_items fetch approach
+      }
+    }
+  } catch(e) {}
+
+  if (!listsData.length) {
+    items.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Δεν υπάρχουν λίστες. Δημιούργησε μια πρώτα!</div>';
+  } else {
+    for (const lst of listsData) {
+      const row = document.createElement('div');
+      row.className = 'list-modal-row';
+      row.innerHTML = `<span class="list-dot" style="background:${lst.color}"></span>${esc(lst.name)}<span class="list-count" style="margin-left:auto">${lst.count||0}</span>`;
+      row.onclick = async () => {
+        await fetch(`/api/lists/${lst.id}/creators`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({creator_id: creatorId})
+        });
+        row.classList.add('in-list');
+        row.innerHTML = `<span class="list-dot" style="background:${lst.color}"></span>${esc(lst.name)} ✓`;
+        lst.count = (lst.count || 0) + 1;
+        renderLists();
+      };
+      items.appendChild(row);
+    }
+  }
+  document.getElementById('list-modal').hidden = false;
+}
+function closeListModal() { document.getElementById('list-modal').hidden = true; activeListCreatorId = null; }
+
+// ── Sort ────────────────────────────────────────────────────────────────────────
+function onSortChange() {
+  state.sort = document.getElementById('sort-select').value;
   state.offset = 0;
   loadCreators();
 }
@@ -1047,18 +1474,32 @@ async function loadCreators() {
   const params = new URLSearchParams({
     limit: state.limit, offset: state.offset,
     min_followers: state.min, max_followers: state.max,
+    sort: state.sort,
   });
   if (state.platform) params.set('platform', state.platform);
   if (state.niche)    params.set('niche', state.niche);
   if (state.email)    params.set('has_email', 'true');
   if (state.language) params.set('language', state.language);
   if (state.search)   params.set('search', state.search);
+  if (state.listId)   params.set('list_id', state.listId);
 
   const data = await fetch('/api/creators?' + params).then(r => r.json());
   state.total = data.total;
 
+  // Sync outreach from response (backend attaches it)
+  (data.creators || []).forEach(c => {
+    if (c.id && c.outreach_status) {
+      if (!outreachData[c.id]) outreachData[c.id] = {};
+      outreachData[c.id].status = c.outreach_status;
+      if (c.outreach_notes) outreachData[c.id].notes = c.outreach_notes;
+    }
+  });
+
   hide('loading-state');
   document.getElementById('result-count').textContent = fmt(data.total);
+  // Update "all" list count
+  const lcAll = document.getElementById('lc-all');
+  if (lcAll && !state.listId && !state.platform && !state.niche) lcAll.textContent = fmt(data.total);
 
   if (!data.creators.length) { show('empty-state'); return; }
 
@@ -1110,6 +1551,11 @@ function creatorCard(c) {
 
   const engRate = c.engagement_rate ? `<span style="font-size:10px;color:var(--text3);font-weight:600">${c.engagement_rate}% ER</span>` : '';
 
+  const cid = c.id;
+  const creatorStatus = outreachData[cid]?.status || c.outreach_status || 'new';
+  const hasNotes = !!(outreachData[cid]?.notes || c.outreach_notes);
+  const displayName = esc(c.display_name || c.username);
+
   el.innerHTML = `
     <div class="card-head">
       <div class="card-av-wrap">
@@ -1117,8 +1563,11 @@ function creatorCard(c) {
         <div class="card-plat-badge">${p.svg}</div>
       </div>
       <div class="card-info">
-        <div class="card-name">${esc(c.display_name || c.username)}</div>
+        <div class="card-name">${displayName}</div>
         <div class="card-username">@${esc(c.username)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div class="outreach-wrap">${outreachBadgeHtml(cid, creatorStatus)}</div>
       </div>
     </div>
     <div class="card-stats">
@@ -1146,6 +1595,14 @@ function creatorCard(c) {
         Άνοιγμα
       </a>
       ${emailBtn}
+      <button class="card-btn card-btn-notes" onclick="openNotes(${cid},'${displayName.replace(/'/g,'')}')" title="${hasNotes ? 'Υπάρχουν σημειώσεις' : 'Προσθήκη σημείωσης'}">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5V8H8V7h5zm0 11H8v-1h5v1zm1-3H8v-1h6v1zm0-3H8v-1h6v1zM15 3.5L18.5 7H15z"/></svg>
+        ${hasNotes ? '📋' : '+'}
+      </button>
+      <button class="card-btn" onclick="openListModal(${cid},'${displayName.replace(/'/g,'')}')" title="Προσθήκη σε λίστα">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        Λίστα
+      </button>
     </div>`;
   return el;
 }

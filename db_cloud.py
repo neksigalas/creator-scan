@@ -66,15 +66,40 @@ def _build_query(table_query, platform=None, niche=None,
 
 def query_creators(platform=None, niche=None, min_followers=2000,
                    max_followers=100_000, has_email=None, language=None,
-                   search=None, limit=100, offset=0) -> list[dict]:
+                   search=None, limit=100, offset=0, sort="followers_desc",
+                   list_id=None) -> list[dict]:
     client = get_client()
-    q = _build_query(
-        client.table("cs_creators").select("*"),
-        platform, niche, min_followers, max_followers, has_email, language, search
-    )
-    result = (q.order("followers", desc=True)
-               .range(offset, offset + limit - 1)
-               .execute())
+
+    if list_id is not None:
+        # Get creator IDs in the list first
+        list_r = (client.table("cs_list_items")
+                  .select("creator_id")
+                  .eq("list_id", list_id)
+                  .execute())
+        ids = [r["creator_id"] for r in (list_r.data or [])]
+        if not ids:
+            return []
+        q = _build_query(
+            client.table("cs_creators").select("*").in_("id", ids),
+            platform, niche, min_followers, max_followers, has_email, language, search
+        )
+    else:
+        q = _build_query(
+            client.table("cs_creators").select("*"),
+            platform, niche, min_followers, max_followers, has_email, language, search
+        )
+
+    # Sort
+    if sort == "followers_asc":
+        q = q.order("followers", desc=False)
+    elif sort == "recent":
+        q = q.order("updated_at", desc=True)
+    elif sort == "email_first":
+        q = q.order("has_email", desc=True).order("followers", desc=True)
+    else:  # followers_desc (default)
+        q = q.order("followers", desc=True)
+
+    result = (q.range(offset, offset + limit - 1).execute())
     return result.data or []
 
 
@@ -197,3 +222,82 @@ def get_key_usage(key: str, days: int = 7) -> list[dict]:
 def init_db():
     """No-op for cloud — tables created via SQL migration."""
     pass
+
+
+# ── Outreach CRM ──────────────────────────────────────────────────────────────
+
+def get_outreach_all() -> dict[int, dict]:
+    """Επιστρέφει {creator_id: {status, notes}} για όλους."""
+    result = get_client().table("cs_outreach").select("*").execute()
+    return {r["creator_id"]: r for r in (result.data or [])}
+
+
+def upsert_outreach(creator_id: int, status: str = None, notes: str = None) -> dict:
+    """Upsert outreach record."""
+    data: dict = {"creator_id": creator_id, "updated_at": datetime.utcnow().isoformat()}
+    if status is not None:
+        data["status"] = status
+    if notes is not None:
+        data["notes"] = notes
+    client = get_client()
+    result = client.table("cs_outreach").upsert(data, on_conflict="creator_id").execute()
+    return result.data[0] if result.data else data
+
+
+# ── Saved Lists ───────────────────────────────────────────────────────────────
+
+def get_lists() -> list[dict]:
+    result = get_client().table("cs_lists").select("*").order("created_at").execute()
+    return result.data or []
+
+
+def create_list(name: str, color: str = "#6366f1") -> dict:
+    data = {"name": name, "color": color, "created_at": datetime.utcnow().isoformat()}
+    result = get_client().table("cs_lists").insert(data).execute()
+    return result.data[0] if result.data else data
+
+
+def delete_list(list_id: int) -> bool:
+    # Delete items first
+    get_client().table("cs_list_items").delete().eq("list_id", list_id).execute()
+    result = get_client().table("cs_lists").delete().eq("id", list_id).execute()
+    return bool(result.data)
+
+
+def add_to_list(list_id: int, creator_id: int) -> bool:
+    data = {"list_id": list_id, "creator_id": creator_id,
+            "added_at": datetime.utcnow().isoformat()}
+    try:
+        get_client().table("cs_list_items").upsert(
+            data, on_conflict="list_id,creator_id"
+        ).execute()
+        return True
+    except Exception:
+        return False
+
+
+def remove_from_list(list_id: int, creator_id: int) -> bool:
+    result = (get_client().table("cs_list_items")
+              .delete()
+              .eq("list_id", list_id)
+              .eq("creator_id", creator_id)
+              .execute())
+    return True
+
+
+def get_list_creator_ids(list_id: int) -> list[int]:
+    result = (get_client().table("cs_list_items")
+              .select("creator_id")
+              .eq("list_id", list_id)
+              .execute())
+    return [r["creator_id"] for r in (result.data or [])]
+
+
+def get_list_counts() -> dict[int, int]:
+    """Επιστρέφει {list_id: count} για όλες τις λίστες."""
+    result = get_client().table("cs_list_items").select("list_id").execute()
+    counts: dict[int, int] = {}
+    for r in (result.data or []):
+        lid = r["list_id"]
+        counts[lid] = counts.get(lid, 0) + 1
+    return counts

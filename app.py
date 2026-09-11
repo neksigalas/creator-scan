@@ -156,6 +156,8 @@ async def api_creators(
     has_email:    Optional[bool] = None,
     language:     Optional[str] = None,
     search:       Optional[str] = None,
+    sort:         str = "followers_desc",
+    list_id:      Optional[int] = None,
     limit:        int = Query(default=50, le=500),
     offset:       int = 0,
 ):
@@ -169,6 +171,8 @@ async def api_creators(
         limit=limit,
         offset=offset,
         search=search,
+        sort=sort,
+        list_id=list_id,
     )
     total = db.count_creators(
         platform=platform,
@@ -179,6 +183,16 @@ async def api_creators(
         language=language,
         search=search,
     )
+    # Attach outreach status to each creator
+    try:
+        outreach_map = db.get_outreach_all()
+    except Exception:
+        outreach_map = {}
+    for c in creators:
+        o = outreach_map.get(c.get("id"))
+        c["outreach_status"] = o["status"] if o else "new"
+        c["outreach_notes"] = o["notes"] if o else ""
+
     return {"creators": creators, "total": total, "offset": offset, "limit": limit}
 
 
@@ -397,6 +411,67 @@ async def api_key_usage(key: str):
         raise HTTPException(404, "Key δεν βρέθηκε")
     usage = db.get_key_usage(key, days=7)
     return {"key_info": info, "usage_last_7_days": usage}
+
+
+# ── Outreach CRM ─────────────────────────────────────────────────────────────
+
+@app.get("/api/outreach")
+async def api_outreach_all():
+    """Επιστρέφει όλα τα outreach records."""
+    data = db.get_outreach_all()
+    return {"outreach": data}
+
+
+@app.patch("/api/outreach/{creator_id}")
+async def api_outreach_update(
+    creator_id: int,
+    status: Optional[str] = Body(default=None, embed=True),
+    notes:  Optional[str] = Body(default=None, embed=True),
+):
+    """Update outreach status/notes για creator."""
+    VALID = {"new", "contacted", "replied", "interested", "passed"}
+    if status and status not in VALID:
+        raise HTTPException(400, f"status πρέπει να είναι: {', '.join(VALID)}")
+    result = db.upsert_outreach(creator_id, status=status, notes=notes)
+    return {"success": True, "outreach": result}
+
+
+# ── Saved Lists ───────────────────────────────────────────────────────────────
+
+@app.get("/api/lists")
+async def api_get_lists():
+    lists = db.get_lists()
+    counts = db.get_list_counts()
+    for lst in lists:
+        lst["count"] = counts.get(lst["id"], 0)
+    return {"lists": lists}
+
+
+@app.post("/api/lists")
+async def api_create_list(
+    name:  str = Body(..., embed=True),
+    color: str = Body("#6366f1", embed=True),
+):
+    lst = db.create_list(name=name, color=color)
+    return {"success": True, "list": lst}
+
+
+@app.delete("/api/lists/{list_id}")
+async def api_delete_list(list_id: int):
+    db.delete_list(list_id)
+    return {"success": True}
+
+
+@app.post("/api/lists/{list_id}/creators")
+async def api_add_to_list(list_id: int, creator_id: int = Body(..., embed=True)):
+    ok = db.add_to_list(list_id, creator_id)
+    return {"success": ok}
+
+
+@app.delete("/api/lists/{list_id}/creators/{creator_id}")
+async def api_remove_from_list(list_id: int, creator_id: int):
+    db.remove_from_list(list_id, creator_id)
+    return {"success": True}
 
 
 # ── API Keys Dashboard page ───────────────────────────────────────────────────
