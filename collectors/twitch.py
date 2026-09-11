@@ -11,6 +11,7 @@ import requests
 from rich.console import Console
 
 from processors.niche import classify_niche, extract_email
+from processors.linktree import find_email_via_linkinbio
 
 console = Console()
 
@@ -286,6 +287,8 @@ class TwitchCollector:
                     niches.insert(0, mapped_niche)
 
                 email = extract_email(description)
+                if not email:
+                    email = find_email_via_linkinbio(description)
 
                 live_viewers = int(s.get("viewer_count", 0))
                 # Engagement Rate: live viewers / followers × 100

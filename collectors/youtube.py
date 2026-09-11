@@ -17,6 +17,7 @@ from googleapiclient.errors import HttpError
 from rich.console import Console
 
 from processors.niche import classify_niche, extract_email
+from processors.linktree import find_email_via_linkinbio, scrape_generic, EMAIL_PATTERN
 
 console = Console()
 
@@ -49,6 +50,39 @@ NICHE_QUERIES: dict[str, list[str]] = {
     "Pets & Animals": ["dog channel", "cat youtube", "animal rescue vlog", "pet care"],
     "Business":     ["entrepreneur vlog", "startup journey", "business tips youtube", "side hustle"],
 }
+
+
+def scrape_youtube_channel_links(channel_url: str) -> list[str]:
+    """
+    Scrapes a YouTube channel's About page to get external links.
+    These links (Linktree, Instagram, etc.) are NOT in the API description.
+    Returns list of real external URLs (youtube.com/redirect unwrapped).
+    """
+    import urllib.parse
+    try:
+        resp = requests.get(channel_url + "/about", headers=HEADERS, timeout=12)
+        match = re.search(r"var ytInitialData\s*=\s*(\{.+?\});</script>", resp.text, re.DOTALL)
+        if not match:
+            return []
+        data = json.loads(match.group(1))
+
+        links = []
+        # Walk JSON looking for primaryLinks / channelAboutFullMetadataRenderer
+        blob = json.dumps(data)
+        # Extract all youtube.com/redirect?q= URLs and decode them
+        redirects = re.findall(r'https://www\.youtube\.com/redirect\?[^"\\]+', blob)
+        for r_url in redirects:
+            # Unescape JSON unicode
+            r_url = r_url.replace('\\u0026', '&').replace('\\u003d', '=')
+            parsed = urllib.parse.urlparse(r_url)
+            qs = urllib.parse.parse_qs(parsed.query)
+            real = qs.get('q', [None])[0]
+            if real and real not in links:
+                links.append(real)
+
+        return links[:10]
+    except Exception:
+        return []
 
 
 def scrape_youtube_channel_ids(query: str, max_results: int = 30) -> list[str]:
@@ -166,7 +200,19 @@ class YouTubeCollector:
                 combined     = f"{description} {keywords_str} {snippet.get('title', '')}"
 
                 niche, niches = classify_niche(combined)
-                email         = extract_email(description)
+                email = extract_email(description)
+                # Αν δεν βρέθηκε email, ψάξε στο Linktree/Beacons από bio
+                if not email:
+                    email = find_email_via_linkinbio(description)
+                # Αν ακόμα δεν βρέθηκε, scrape channel About page για links
+                if not email:
+                    ext_links = scrape_youtube_channel_links(profile_url)
+                    for ext_url in ext_links:
+                        # Ψάξε email στο κάθε εξωτερικό link
+                        scraped = find_email_via_linkinbio(ext_url) or scrape_generic(ext_url)
+                        if scraped:
+                            email = scraped
+                            break
 
                 custom_url = snippet.get("customUrl", "")
                 profile_url = (
