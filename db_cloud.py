@@ -51,7 +51,7 @@ def upsert_creator(data: dict) -> bool:
 
 def _build_query(table_query, platform=None, niche=None,
                  min_followers=2000, max_followers=100_000,
-                 has_email=None, language=None, search=None):
+                 has_email=None, language=None, search=None, min_er=None):
     q = table_query.gte("followers", min_followers).lte("followers", max_followers)
     if platform:    q = q.eq("platform", platform)
     if niche:       q = q.eq("niche", niche)
@@ -59,19 +59,19 @@ def _build_query(table_query, platform=None, niche=None,
         q = q.eq("has_email", 1 if has_email else 0)
     if language:    q = q.ilike("language", language)
     if search:
-        # Supabase full-text search on display_name
         q = q.or_(f"display_name.ilike.%{search}%,username.ilike.%{search}%,bio.ilike.%{search}%")
+    if min_er is not None:
+        q = q.gte("engagement_rate", min_er)
     return q
 
 
 def query_creators(platform=None, niche=None, min_followers=2000,
                    max_followers=100_000, has_email=None, language=None,
                    search=None, limit=100, offset=0, sort="followers_desc",
-                   list_id=None) -> list[dict]:
+                   list_id=None, min_er=None) -> list[dict]:
     client = get_client()
 
     if list_id is not None:
-        # Get creator IDs in the list first
         list_r = (client.table("cs_list_items")
                   .select("creator_id")
                   .eq("list_id", list_id)
@@ -81,12 +81,12 @@ def query_creators(platform=None, niche=None, min_followers=2000,
             return []
         q = _build_query(
             client.table("cs_creators").select("*").in_("id", ids),
-            platform, niche, min_followers, max_followers, has_email, language, search
+            platform, niche, min_followers, max_followers, has_email, language, search, min_er
         )
     else:
         q = _build_query(
             client.table("cs_creators").select("*"),
-            platform, niche, min_followers, max_followers, has_email, language, search
+            platform, niche, min_followers, max_followers, has_email, language, search, min_er
         )
 
     # Sort
@@ -96,6 +96,8 @@ def query_creators(platform=None, niche=None, min_followers=2000,
         q = q.order("updated_at", desc=True)
     elif sort == "email_first":
         q = q.order("has_email", desc=True).order("followers", desc=True)
+    elif sort == "engagement_desc":
+        q = q.order("engagement_rate", desc=True, nullsfirst=False)
     else:  # followers_desc (default)
         q = q.order("followers", desc=True)
 

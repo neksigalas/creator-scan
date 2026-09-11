@@ -822,6 +822,31 @@ input, select { font-family: inherit; }
 }
 .sort-select:focus { border-color: var(--accent); }
 
+/* ── ENGAGEMENT RATE ─────────────────────────────────────────────────────────── */
+.er-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 7px;
+  border-radius: 20px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.er-high   { background: #ecfdf5; color: #065f46; border: 1px solid rgba(5,150,105,.2); }
+.er-medium { background: #fefce8; color: #854d0e; border: 1px solid rgba(234,179,8,.25); }
+.er-low    { background: #fef2f2; color: #991b1b; border: 1px solid rgba(239,68,68,.2); }
+.er-none   { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+/* ER stat box */
+.card-stat.er-stat { position: relative; }
+.er-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; border-radius: 0 0 4px 4px;
+  transition: width .4s ease;
+}
+.er-bar-high   { background: #059669; }
+.er-bar-medium { background: #d97706; }
+.er-bar-low    { background: #dc2626; }
+
 /* notes icon btn */
 .card-btn-notes svg { opacity: .6; }
 .card-btn-notes:hover svg { opacity: 1; }
@@ -936,6 +961,18 @@ input, select { font-family: inherit; }
     <div class="sidebar-section">
       <div class="section-heading">Γλώσσα</div>
       <input class="filter-input" type="text" id="language" placeholder="el, en, es, fr…" maxlength="5">
+    </div>
+
+    <!-- Engagement Rate filter -->
+    <div class="sidebar-section">
+      <div class="section-heading">Engagement Rate</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="preset-btn er-preset-btn" data-er="" onclick="setErFilter(this,'')">Όλα</button>
+        <button class="preset-btn er-preset-btn" data-er="2" onclick="setErFilter(this,'2')">🟢 >2%</button>
+        <button class="preset-btn er-preset-btn" data-er="5" onclick="setErFilter(this,'5')">🟢 >5%</button>
+        <button class="preset-btn er-preset-btn" data-er="10" onclick="setErFilter(this,'10')">🔥 >10%</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3)">YouTube: views/subs · Twitch: viewers/followers</div>
     </div>
 
     <!-- Email toggle -->
@@ -1070,6 +1107,7 @@ input, select { font-family: inherit; }
       <select class="sort-select" id="sort-select" onchange="onSortChange()">
         <option value="followers_desc">↓ Followers (πολλοί πρώτα)</option>
         <option value="followers_asc">↑ Followers (λίγοι πρώτα)</option>
+        <option value="engagement_desc">🔥 Engagement Rate (υψηλό πρώτα)</option>
         <option value="recent">🕐 Πρόσφατα προσθ.</option>
         <option value="email_first">✉ Email πρώτα</option>
       </select>
@@ -1158,7 +1196,7 @@ const state = {
   min: 2000, max: 100000,
   email: false, language: '',
   search: '', offset: 0, limit: 48, total: 0,
-  sort: 'followers_desc', listId: null,
+  sort: 'followers_desc', listId: null, minEr: null,
 };
 let searchTimer = null, scanTimer = null;
 
@@ -1426,6 +1464,20 @@ function onSortChange() {
   loadCreators();
 }
 
+// ── ER Filter ──────────────────────────────────────────────────────────────────
+function setErFilter(btn, val) {
+  document.querySelectorAll('.er-preset-btn').forEach(b => b.style.background = '');
+  btn.style.background = 'var(--accent-lt)';
+  btn.style.borderColor = 'var(--accent)';
+  btn.style.color = 'var(--accent)';
+  document.querySelectorAll('.er-preset-btn').forEach(b => {
+    if (b !== btn) { b.style.background = ''; b.style.borderColor = ''; b.style.color = ''; }
+  });
+  state.minEr = val ? parseFloat(val) : null;
+  state.offset = 0;
+  loadCreators();
+}
+
 // ── Platform tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll('.ptab').forEach(tab => {
   tab.onclick = () => {
@@ -1482,6 +1534,7 @@ async function loadCreators() {
   if (state.language) params.set('language', state.language);
   if (state.search)   params.set('search', state.search);
   if (state.listId)   params.set('list_id', state.listId);
+  if (state.minEr != null) params.set('min_er', state.minEr);
 
   const data = await fetch('/api/creators?' + params).then(r => r.json());
   state.total = data.total;
@@ -1553,6 +1606,18 @@ function creatorCard(c) {
 
   const cid = c.id;
   const creatorStatus = outreachData[cid]?.status || c.outreach_status || 'new';
+
+  // Engagement rate display
+  const er = c.engagement_rate;
+  let erCls = 'er-none', erBarCls = '', erLabel = '—';
+  if (er != null) {
+    erLabel = er.toFixed(1) + '%';
+    if (er >= 5)      { erCls = 'er-high';   erBarCls = 'er-bar-high'; }
+    else if (er >= 2) { erCls = 'er-medium'; erBarCls = 'er-bar-medium'; }
+    else              { erCls = 'er-low';    erBarCls = 'er-bar-low'; }
+  }
+  // Bar width: cap at 20% → 100% bar width
+  const barW = er != null ? Math.min(100, er / 20 * 100) : 0;
   const hasNotes = !!(outreachData[cid]?.notes || c.outreach_notes);
   const displayName = esc(c.display_name || c.username);
 
@@ -1579,9 +1644,10 @@ function creatorCard(c) {
         <div class="cs-val">${fmtNum(c.avg_views)}</div>
         <div class="cs-lbl">Avg Views</div>
       </div>
-      <div class="card-stat">
-        <div class="cs-val">${fmtNum(c.posts_count)}</div>
-        <div class="cs-lbl">Posts</div>
+      <div class="card-stat er-stat" title="Engagement Rate: avg_views ÷ followers × 100">
+        <div class="cs-val"><span class="er-badge ${erCls}">${erLabel}</span></div>
+        <div class="cs-lbl">Eng. Rate</div>
+        ${er != null ? `<div class="er-bar ${erBarCls}" style="width:${barW}%"></div>` : ''}
       </div>
     </div>
     <div class="card-badges">

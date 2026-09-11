@@ -158,6 +158,7 @@ async def api_creators(
     search:       Optional[str] = None,
     sort:         str = "followers_desc",
     list_id:      Optional[int] = None,
+    min_er:       Optional[float] = None,
     limit:        int = Query(default=50, le=500),
     offset:       int = 0,
 ):
@@ -173,6 +174,7 @@ async def api_creators(
         search=search,
         sort=sort,
         list_id=list_id,
+        min_er=min_er,
     )
     total = db.count_creators(
         platform=platform,

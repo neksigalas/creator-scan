@@ -287,6 +287,11 @@ class TwitchCollector:
 
                 email = extract_email(description)
 
+                live_viewers = int(s.get("viewer_count", 0))
+                # Engagement Rate: live viewers / followers × 100
+                # Measures: what % of followers are watching live concurrently
+                tw_eng = round(live_viewers / followers * 100, 2) if followers > 0 and live_viewers > 0 else None
+
                 yield {
                     "platform":        "twitch",
                     "platform_id":     bid,
@@ -295,8 +300,8 @@ class TwitchCollector:
                     "followers":       followers,
                     "following":       None,
                     "posts_count":     None,
-                    "avg_views":       int(s.get("viewer_count", 0)),
-                    "engagement_rate": None,
+                    "avg_views":       live_viewers,
+                    "engagement_rate": tw_eng,
                     "niche":           mapped_niche,
                     "niches":          niches[:3],
                     "language":        language,

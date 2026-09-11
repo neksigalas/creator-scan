@@ -157,6 +157,9 @@ class YouTubeCollector:
                 video_count = int(stats.get("videoCount", 0))
                 view_count  = int(stats.get("viewCount", 0))
                 avg_views   = (view_count // video_count) if video_count > 0 else 0
+                # Engagement Rate: avg_views / subscribers × 100
+                # Measures: what % of subscribers actually watch each video
+                eng_rate = round(avg_views / sub_count * 100, 2) if sub_count > 0 and avg_views > 0 else None
 
                 description  = snippet.get("description", "")
                 keywords_str = branding.get("keywords", "")
@@ -181,7 +184,7 @@ class YouTubeCollector:
                     "following":       None,
                     "posts_count":     video_count,
                     "avg_views":       avg_views,
-                    "engagement_rate": None,
+                    "engagement_rate": eng_rate,
                     "niche":           niche,
                     "niches":          niches,
                     "language":        snippet.get("defaultLanguage") or snippet.get("country"),
