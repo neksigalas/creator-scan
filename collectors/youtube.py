@@ -28,6 +28,9 @@ HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     ),
     "Accept-Language": "en-US,en;q=0.9",
+    # Bypass EU GDPR consent page
+    # Bypass EU GDPR consent page (SOCS=CAI = accept minimal)
+    "Cookie": "SOCS=CAI",
 }
 
 NICHE_QUERIES: dict[str, list[str]] = {
@@ -52,13 +55,27 @@ NICHE_QUERIES: dict[str, list[str]] = {
 }
 
 
+def _find_all_by_key(obj, key, results=None):
+    """Recursive JSON walker — βρίσκει όλα τα values για ένα key."""
+    if results is None:
+        results = []
+    if isinstance(obj, dict):
+        if key in obj:
+            results.append(obj[key])
+        for v in obj.values():
+            _find_all_by_key(v, key, results)
+    elif isinstance(obj, list):
+        for item in obj:
+            _find_all_by_key(item, key, results)
+    return results
+
+
 def scrape_youtube_channel_links(channel_url: str) -> list[str]:
     """
-    Scrapes a YouTube channel's About page to get external links.
-    These links (Linktree, Instagram, etc.) are NOT in the API description.
-    Returns list of real external URLs (youtube.com/redirect unwrapped).
+    Scrapes YouTube channel About page → εξωτερικά links (Linktree, Instagram, κτλ).
+    Χρησιμοποιεί channelExternalLinkViewModel από ytInitialData JSON.
+    Cookie SOCS=CAI: bypass EU GDPR consent.
     """
-    import urllib.parse
     try:
         resp = requests.get(channel_url + "/about", headers=HEADERS, timeout=12)
         match = re.search(r"var ytInitialData\s*=\s*(\{.+?\});</script>", resp.text, re.DOTALL)
@@ -66,21 +83,18 @@ def scrape_youtube_channel_links(channel_url: str) -> list[str]:
             return []
         data = json.loads(match.group(1))
 
-        links = []
-        # Walk JSON looking for primaryLinks / channelAboutFullMetadataRenderer
-        blob = json.dumps(data)
-        # Extract all youtube.com/redirect?q= URLs and decode them
-        redirects = re.findall(r'https://www\.youtube\.com/redirect\?[^"\\]+', blob)
-        for r_url in redirects:
-            # Unescape JSON unicode
-            r_url = r_url.replace('\\u0026', '&').replace('\\u003d', '=')
-            parsed = urllib.parse.urlparse(r_url)
-            qs = urllib.parse.parse_qs(parsed.query)
-            real = qs.get('q', [None])[0]
-            if real and real not in links:
-                links.append(real)
+        # channelExternalLinkViewModel → link.content = "twitter.com/MKBHD" κτλ
+        ext_entries = _find_all_by_key(data, "channelExternalLinkViewModel")
+        urls = []
+        for entry in ext_entries:
+            content = entry.get("link", {}).get("content", "")
+            if content:
+                if not content.startswith("http"):
+                    content = "https://" + content
+                if content not in urls:
+                    urls.append(content)
 
-        return links[:10]
+        return urls[:15]
     except Exception:
         return []
 
