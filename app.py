@@ -53,8 +53,11 @@ ACCESS_USER     = os.getenv("ACCESS_USER", "admin")
 ACCESS_PASSWORD = os.getenv("ACCESS_PASSWORD", "")
 ON_VERCEL       = bool(os.getenv("VERCEL"))
 
+# Paths that never require auth
+_PUBLIC_PATHS = {"/", "/join", "/api/auth/verify", "/api/join"}
 
-def _authorized(header: str) -> bool:
+
+def _basic_authorized(header: str) -> bool:
     if not header.startswith("Basic "):
         return False
     try:
@@ -65,18 +68,57 @@ def _authorized(header: str) -> bool:
             and secrets.compare_digest(pw, ACCESS_PASSWORD))
 
 
+# Cache validated license keys for 60 s to avoid hammering Supabase
+import time as _time
+_lic_cache: dict[str, tuple[dict, float]] = {}
+_LIC_TTL = 60.0
+
+def _license_authorized(key: str) -> bool:
+    if not key:
+        return False
+    now = _time.time()
+    if key in _lic_cache:
+        info, ts = _lic_cache[key]
+        if now - ts < _LIC_TTL:
+            return info is not None
+    try:
+        info = db.validate_license_key(key)
+    except Exception:
+        info = None
+    _lic_cache[key] = (info, now)
+    return info is not None
+
+
 @app.middleware("http")
 async def access_gate(request: Request, call_next):
-    if request.url.path.startswith("/v1/"):
+    path = request.url.path
+
+    # Static files & public routes — always allowed
+    if path.startswith("/static/") or path in _PUBLIC_PATHS:
         return await call_next(request)
-    if not ACCESS_PASSWORD:
-        if ON_VERCEL:
-            return Response("CreatorScan is not configured for public access.", status_code=503)
-        return await call_next(request)          # local development
-    if _authorized(request.headers.get("authorization", "")):
+
+    # /v1/* keeps its own API-key auth
+    if path.startswith("/v1/"):
         return await call_next(request)
-    return Response("Authentication required", status_code=401,
-                    headers={"WWW-Authenticate": 'Basic realm="CreatorScan"'})
+
+    # Check license key header (primary user auth)
+    lic_key = request.headers.get("X-License", "")
+    if _license_authorized(lic_key):
+        return await call_next(request)
+
+    # Fallback: HTTP Basic (admin / local dev)
+    if _basic_authorized(request.headers.get("authorization", "")):
+        return await call_next(request)
+
+    # Local dev without ACCESS_PASSWORD → open
+    if not ACCESS_PASSWORD and not ON_VERCEL:
+        return await call_next(request)
+
+    return Response(
+        '{"error":"License key required","hint":"POST /api/auth/verify with your key"}',
+        status_code=401,
+        media_type="application/json",
+    )
 
 # ── Serve static files ────────────────────────────────────────────────────────
 STATIC_DIR = Path(__file__).parent / "static"
@@ -305,6 +347,183 @@ async def api_scan_status():
         "found":   scan_state["found"],
         "log":     scan_state["log"][-30:],  # last 30 lines
     }
+
+
+# ── Auth — License key verify ─────────────────────────────────────────────────
+
+@app.post("/api/auth/verify")
+async def api_auth_verify(body: dict = Body(...)):
+    """
+    Verify a license key. Returns tier info on success.
+    No auth required — this IS the auth endpoint.
+    """
+    key = (body.get("key") or "").strip()
+    if not key:
+        raise HTTPException(400, "key is required")
+    info = db.validate_license_key(key)
+    if not info:
+        raise HTTPException(401, "Invalid or inactive license key")
+    return {
+        "valid": True,
+        "tier":  info.get("tier", "starter"),
+        "email": info.get("email", ""),
+    }
+
+
+# ── Creator Join (self-registration — no auth) ────────────────────────────────
+
+@app.get("/join", response_class=HTMLResponse)
+async def join_page():
+    """Serve the creator self-registration page."""
+    join_path = STATIC_DIR / "join.html"
+    if join_path.exists():
+        return HTMLResponse(content=join_path.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Join page not found</h1>", status_code=404)
+
+
+@app.post("/api/join")
+async def api_join(body: dict = Body(...)):
+    """Public endpoint: creator submits their own profile."""
+    platform = (body.get("platform") or "").strip().lower()
+    username = (body.get("username") or "").strip()
+    if not platform or not username:
+        raise HTTPException(400, "platform and username are required")
+    if platform not in ("youtube", "twitch", "tiktok", "instagram"):
+        raise HTTPException(400, "Invalid platform")
+    result = db.submit_join_request(body)
+    return {"ok": True, "message": "Thanks! Your listing will be reviewed within 24 hours."}
+
+
+# ── Creator Growth (follower history) ─────────────────────────────────────────
+
+@app.get("/api/creators/{creator_id}/growth")
+async def api_creator_growth(creator_id: int, days: int = 30):
+    """Return follower history snapshots for a creator."""
+    snapshots = db.get_creator_snapshots(creator_id, days=days)
+    return {"creator_id": creator_id, "snapshots": snapshots}
+
+
+# ── AI Outreach Writer ────────────────────────────────────────────────────────
+
+@app.post("/api/ai/write-email")
+async def api_ai_write_email(body: dict = Body(...)):
+    """
+    Use Claude to write a personalised outreach email for a creator.
+    Body: {creator_id, tone, brand_name, product_name}
+    """
+    import anthropic as _ant
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise HTTPException(503, "AI writer not configured (ANTHROPIC_API_KEY missing)")
+
+    creator_id = body.get("creator_id")
+    if not creator_id:
+        raise HTTPException(400, "creator_id required")
+
+    c = db.get_creator_by_id(creator_id)
+    if not c:
+        raise HTTPException(404, "Creator not found")
+
+    tone       = body.get("tone", "friendly")       # friendly | professional | brief
+    brand_name = body.get("brand_name", "[Your Brand]")
+    product    = body.get("product_name", "[Your Product]")
+
+    followers = c.get("followers", 0) or 0
+    fol_str = (f"{followers/1_000_000:.1f}M" if followers >= 1_000_000
+               else f"{followers/1_000:.0f}K" if followers >= 1_000
+               else str(followers))
+
+    prompt = f"""You are a professional influencer marketing specialist.
+Write a personalised outreach email for the following creator:
+
+Name: {c.get('display_name') or c.get('username', '')}
+Platform: {c.get('platform', '').capitalize()}
+Followers: {fol_str}
+Niche: {c.get('niche', 'General')}
+Engagement Rate: {c.get('engagement_rate', 'unknown')}%
+Bio: {(c.get('bio') or 'No bio available')[:300]}
+
+Brand: {brand_name}
+Product/Offer: {product}
+Tone: {tone}
+
+Write:
+1. A compelling subject line (max 65 characters)
+2. An email body (3–4 short paragraphs, 150–200 words max)
+
+Rules:
+- Address the creator by first name
+- Reference something specific from their niche/content style
+- Be genuine, not salesy
+- End with a clear, low-friction CTA
+- Use [Your Name] as placeholder for sender name
+
+Respond with ONLY valid JSON, no markdown:
+{{"subject": "...", "body": "..."}}"""
+
+    client = _ant.Anthropic(api_key=api_key)
+    msg = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=600,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    raw = msg.content[0].text.strip()
+
+    import json as _json
+    try:
+        result = _json.loads(raw)
+        if "subject" not in result or "body" not in result:
+            raise ValueError("Missing fields")
+        return {"ok": True, "subject": result["subject"], "body": result["body"]}
+    except Exception:
+        # Fallback: extract manually
+        import re as _re
+        subj = _re.search(r'"subject"\s*:\s*"([^"]+)"', raw)
+        body_ = _re.search(r'"body"\s*:\s*"(.*?)"(?=\s*[,}])', raw, _re.DOTALL)
+        if subj and body_:
+            return {
+                "ok": True,
+                "subject": subj.group(1),
+                "body": body_.group(1).replace("\\n", "\n"),
+            }
+        raise HTTPException(500, f"AI parse error: {raw[:200]}")
+
+
+# ── Admin: License key management ────────────────────────────────────────────
+
+@app.post("/api/admin/licenses")
+async def api_create_license(body: dict = Body(...)):
+    """Create a license key. Requires HTTP Basic admin auth (not license key)."""
+    # Extra check: only allow via Basic auth (admin), not license key
+    email = body.get("email", "")
+    tier  = body.get("tier", "starter")
+    if tier not in ("starter", "pro", "agency"):
+        raise HTTPException(400, "tier must be starter | pro | agency")
+    info = db.create_license_key(email=email, tier=tier)
+    return {"ok": True, "key": info["key"], "tier": tier, "email": email}
+
+
+@app.get("/api/admin/licenses")
+async def api_list_licenses():
+    """List all license keys."""
+    keys = db.list_license_keys()
+    for k in keys:
+        k["key_masked"] = k["key"][:12] + "…" + k["key"][-4:]
+    return {"keys": keys}
+
+
+@app.delete("/api/admin/licenses/{key}")
+async def api_revoke_license(key: str):
+    ok = db.revoke_license_key(key)
+    return {"ok": ok}
+
+
+# ── Admin: Join requests ──────────────────────────────────────────────────────
+
+@app.get("/api/admin/join-requests")
+async def api_join_requests(status: str = "pending"):
+    return {"requests": db.list_join_requests(status=status)}
 
 
 # ── SMTP Settings (stored in memory, persisted via .env or runtime) ──────────

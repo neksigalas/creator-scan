@@ -706,6 +706,126 @@ input, select { font-family: inherit; }
 .status-opt:hover { background: var(--surface2); }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; }
 
+/* ── LICENSE GATE MODAL ─────────────────────────────────────────────────────── */
+.license-gate {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 0;
+}
+.license-gate-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  width: 440px;
+  max-width: 96vw;
+  box-shadow: 0 24px 64px rgba(15,23,42,.2);
+  text-align: center;
+}
+.license-gate-logo {
+  font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; letter-spacing: -0.5px;
+}
+.license-gate-logo span { color: var(--accent); }
+.license-gate-sub { font-size: 13px; color: var(--text3); margin-bottom: 28px; }
+.license-gate-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text3); text-align: left; margin-bottom: 6px;
+}
+.license-gate-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-size: 14px; font-family: 'Plus Jakarta Sans', monospace;
+  outline: none;
+  transition: border-color .15s;
+  margin-bottom: 10px;
+  letter-spacing: .02em;
+}
+.license-gate-input:focus { border-color: var(--accent); }
+.license-gate-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  border: none; border-radius: var(--r);
+  color: #fff; font-size: 14px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: opacity .15s;
+  margin-top: 4px;
+}
+.license-gate-btn:hover { opacity: .9; }
+.license-gate-btn:disabled { opacity: .5; cursor: default; }
+.license-gate-err { font-size: 12px; color: #dc2626; font-weight: 600; margin-top: 8px; min-height: 18px; }
+.license-gate-footer {
+  margin-top: 20px;
+  font-size: 12px; color: var(--text3);
+}
+.license-gate-footer a { color: var(--accent); font-weight: 600; }
+
+/* ── AUTH SCORE BADGE ────────────────────────────────────────────────────────── */
+.auth-score-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 100px;
+  white-space: nowrap;
+}
+.auth-high   { background: #dcfce7; color: #15803d; }
+.auth-medium { background: #fef9c3; color: #854d0e; }
+.auth-low    { background: #fee2e2; color: #b91c1c; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .auth-high   { background: #14532d; color: #86efac; }
+  :root:not([data-theme="light"]) .auth-medium { background: #422006; color: #fde68a; }
+  :root:not([data-theme="light"]) .auth-low    { background: #450a0a; color: #fca5a5; }
+}
+:root[data-theme="dark"] .auth-high   { background: #14532d; color: #86efac; }
+:root[data-theme="dark"] .auth-medium { background: #422006; color: #fde68a; }
+:root[data-theme="dark"] .auth-low    { background: #450a0a; color: #fca5a5; }
+
+/* ── AI WRITE BUTTON ─────────────────────────────────────────────────────────── */
+.ai-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none; border-radius: var(--r-sm);
+  color: #fff; font-size: 12px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: opacity .15s; white-space: nowrap;
+}
+.ai-btn:hover { opacity: .9; }
+.ai-btn:disabled { opacity: .5; cursor: default; }
+.ai-btn svg { flex-shrink: 0; }
+
+/* ── GROWTH CHART ────────────────────────────────────────────────────────────── */
+.growth-chart-wrap {
+  width: 100%;
+  height: 80px;
+  position: relative;
+  margin-top: 8px;
+}
+.growth-chart-wrap svg { width: 100%; height: 100%; overflow: visible; }
+.growth-no-data {
+  font-size: 12px; color: var(--text3); font-style: italic;
+  padding: 12px 0;
+}
+.growth-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 700;
+  padding: 2px 8px; border-radius: 100px;
+  margin-left: 8px;
+}
+.growth-up   { background: #dcfce7; color: #15803d; }
+.growth-down { background: #fee2e2; color: #b91c1c; }
+.growth-flat { background: var(--surface2); color: var(--text3); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .growth-up   { background: #14532d; color: #86efac; }
+  :root:not([data-theme="light"]) .growth-down { background: #450a0a; color: #fca5a5; }
+}
+:root[data-theme="dark"] .growth-up   { background: #14532d; color: #86efac; }
+:root[data-theme="dark"] .growth-down { background: #450a0a; color: #fca5a5; }
+
 /* ── NOTES MODAL ──────────────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
@@ -1503,6 +1623,28 @@ input, select { font-family: inherit; }
   </main>
 </div>
 
+<!-- ── LICENSE GATE ─────────────────────────────────────────────────────────── -->
+<div class="license-gate" id="license-gate" hidden>
+  <div class="license-gate-box">
+    <div class="license-gate-logo">Creator<span>Scan</span></div>
+    <div class="license-gate-sub">Micro-influencer discovery platform</div>
+    <div class="license-gate-label">License Key</div>
+    <input class="license-gate-input" id="license-input" type="text"
+      placeholder="cs_lic_…"
+      autocomplete="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')verifyLicense()">
+    <button class="license-gate-btn" id="license-btn" onclick="verifyLicense()">
+      Unlock Access →
+    </button>
+    <div class="license-gate-err" id="license-err"></div>
+    <div class="license-gate-footer">
+      Don't have a key? <a href="https://creator-scan.vercel.app/join" target="_blank">Get access</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="event.preventDefault();useDevMode()">Dev mode</a>
+    </div>
+  </div>
+</div>
+
 <!-- ── NOTES MODAL ──────────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="notes-modal" hidden onclick="if(event.target===this)closeNotes()">
   <div class="modal-box">
@@ -1558,7 +1700,13 @@ input, select { font-family: inherit; }
       <div class="tpl-left">
         <!-- Presets -->
         <div>
-          <div class="tpl-label">Quick Templates</div>
+          <div class="tpl-label" style="display:flex;align-items:center;justify-content:space-between">
+            Quick Templates
+            <button class="ai-btn" id="ai-write-bulk-btn" onclick="aiWriteForBulk()" title="AI writes a custom email for the first selected creator">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2zm0 0"/><path d="M6 2L4.9 5.1 2 6l2.9 1.1L6 10l1.1-2.9L10 6 7.1 4.9 6 2z" opacity=".6"/></svg>
+              AI Write
+            </button>
+          </div>
           <div class="tpl-presets">
             <button class="tpl-preset-btn" onclick="loadPreset('collab')">🤝 Collaboration</button>
             <button class="tpl-preset-btn" onclick="loadPreset('review')">📦 Product Review</button>
@@ -2133,6 +2281,7 @@ function creatorCard(c) {
   const nicheBadge = c.niche ? `<span class="badge badge-niche">${esc(c.niche)}</span>` : '';
   const langBadge  = c.language ? `<span class="badge badge-lang">${esc(c.language.toUpperCase())}</span>` : '';
   const emailBadge = c.has_email ? `<span class="badge badge-email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Email</span>` : '';
+  const authScore  = c.auth_score != null ? authScoreBadge(c.auth_score) : '';
 
   const emailBtn = c.email
     ? `<a href="mailto:${esc(c.email)}" class="card-btn card-btn-email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>${esc(c.email.substring(0,22))}</a>`
@@ -2191,7 +2340,7 @@ function creatorCard(c) {
     </div>
     <div class="card-badges">
       <span class="badge ${p.badgeCls}">${p.svg}${p.label}</span>
-      ${nicheBadge}${langBadge}${emailBadge}
+      ${nicheBadge}${langBadge}${emailBadge}${authScore}
     </div>
     ${c.bio ? `<div class="card-bio">${esc(c.bio)}</div>` : ''}
     <div class="card-actions">
@@ -2680,12 +2829,69 @@ async function openDrawer(creatorId) {
         </div>
       </div>
 
+      <!-- Auth Score (if available) -->
+      ${c.auth_score != null ? `
+      <div class="d-section">
+        <div class="d-section-title">Αυθεντικότητα</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <div style="font-size:28px;font-weight:800;color:var(--text)">${c.auth_score}</div>
+          <div>
+            ${authScoreBadge(c.auth_score, true)}
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">Βασίζεται σε ER, bio, views</div>
+          </div>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${c.auth_score}%;background:${c.auth_score>=70?'#059669':c.auth_score>=45?'#d97706':'#dc2626'};border-radius:3px;transition:width .5s"></div>
+        </div>
+      </div>` : ''}
+
+      <!-- Growth Chart -->
+      <div class="d-section" id="growth-section-${c.id}">
+        <div class="d-section-title" style="display:flex;align-items:center;justify-content:space-between">
+          Ανάπτυξη Followers
+          <span id="growth-delta-${c.id}"></span>
+        </div>
+        <div class="growth-chart-wrap" id="growth-chart-${c.id}">
+          <div class="growth-no-data">Φόρτωση ιστορικού…</div>
+        </div>
+      </div>
+
+      <!-- AI Outreach Writer -->
+      <div class="d-section">
+        <div class="d-section-title">AI Outreach Writer</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <select id="ai-tone-${c.id}" class="sort-select" style="flex:1;min-width:100px">
+            <option value="friendly">😊 Friendly</option>
+            <option value="professional">💼 Professional</option>
+            <option value="brief">⚡ Brief</option>
+          </select>
+          <input class="filter-input" id="ai-brand-${c.id}" placeholder="Brand name" style="flex:1;min-width:120px">
+          <button class="ai-btn" onclick="aiWriteEmail(${c.id})" id="ai-write-btn-${c.id}">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg>
+            Γράψε Email
+          </button>
+        </div>
+        <div id="ai-result-${c.id}" style="display:none">
+          <div class="tpl-label">AI Subject</div>
+          <input class="tpl-input" id="ai-subj-${c.id}" style="margin-bottom:8px" readonly>
+          <div class="tpl-label">AI Body</div>
+          <textarea class="tpl-textarea" id="ai-body-${c.id}" style="min-height:160px;resize:vertical" readonly></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="modal-btn modal-btn-save" style="font-size:12px" onclick="useAiEmailInComposer(${c.id})">Χρήση στο Bulk Outreach</button>
+            <button class="d-copy-btn" onclick="copyAiEmail(${c.id})">Αντιγραφή</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Open profile -->
       <a href="${esc(c.profile_url || '#')}" target="_blank" rel="noopener" class="d-open-btn">
         <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
         Άνοιγμα στο ${p.label}
       </a>
     `;
+    // Load growth chart async (non-blocking)
+    loadGrowthChart(creatorId);
+
   } catch(err) {
     body.innerHTML = `<div style="color:var(--text3);padding:20px;text-align:center">Σφάλμα φόρτωσης</div>`;
   }
@@ -2743,8 +2949,215 @@ async function drawerSaveNotes() {
 // Keyboard: Escape closes drawer
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
+// ── Auth score helper ──────────────────────────────────────────────────────────
+function authScoreBadge(score, large = false) {
+  const cls = score >= 70 ? 'auth-high' : score >= 45 ? 'auth-medium' : 'auth-low';
+  const label = score >= 70 ? '✓ Verified' : score >= 45 ? '~ Medium' : '⚠ Low';
+  const icon = score >= 70 ? '🛡' : score >= 45 ? '⚡' : '⚠';
+  if (large) return `<span class="auth-score-badge ${cls}" style="font-size:13px;padding:4px 12px">${icon} ${label} (${score}/100)</span>`;
+  return `<span class="auth-score-badge ${cls}">${icon} ${score}</span>`;
+}
+
+// ── License Key Auth ───────────────────────────────────────────────────────────
+const CS_LICENSE_KEY = 'cs_license';
+
+// Global fetch interceptor — attaches license key to all /api/ requests
+(function() {
+  const _orig = window.fetch;
+  window.fetch = function(url, opts = {}) {
+    const key = localStorage.getItem(CS_LICENSE_KEY);
+    if (key && typeof url === 'string' && url.startsWith('/api/')) {
+      const headers = { ...(opts.headers || {}) };
+      headers['X-License'] = key;
+      opts = { ...opts, headers };
+    }
+    return _orig.call(this, url, opts);
+  };
+})();
+
+async function verifyLicense() {
+  const input = document.getElementById('license-input');
+  const err   = document.getElementById('license-err');
+  const btn   = document.getElementById('license-btn');
+  const key   = input.value.trim();
+  if (!key) { err.textContent = 'Enter your license key'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying…';
+  err.textContent = '';
+
+  try {
+    const r = await fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'Invalid key');
+    localStorage.setItem(CS_LICENSE_KEY, key);
+    document.getElementById('license-gate').hidden = true;
+    init();
+  } catch(e) {
+    err.textContent = e.message || 'Invalid key. Try again.';
+    btn.disabled = false;
+    btn.textContent = 'Unlock Access →';
+  }
+}
+
+function useDevMode() {
+  // Local dev: skip auth
+  localStorage.setItem(CS_LICENSE_KEY, '__dev__');
+  document.getElementById('license-gate').hidden = true;
+  init();
+}
+
+function checkLicense() {
+  const key = localStorage.getItem(CS_LICENSE_KEY);
+  if (!key) {
+    document.getElementById('license-gate').hidden = false;
+    return false;
+  }
+  return true;
+}
+
+// ── Growth Chart ──────────────────────────────────────────────────────────────
+async function loadGrowthChart(creatorId) {
+  const chartEl = document.getElementById(`growth-chart-${creatorId}`);
+  const deltaEl = document.getElementById(`growth-delta-${creatorId}`);
+  if (!chartEl) return;
+
+  try {
+    const data = await fetch(`/api/creators/${creatorId}/growth?days=30`).then(r => r.json());
+    const snaps = data.snapshots || [];
+
+    if (snaps.length < 2) {
+      chartEl.innerHTML = '<div class="growth-no-data">Growth tracking starts from tomorrow. Data is collected daily.</div>';
+      return;
+    }
+
+    // Delta badge
+    const first = snaps[0].followers, last = snaps[snaps.length - 1].followers;
+    const delta = last - first;
+    const pct   = first > 0 ? ((delta / first) * 100).toFixed(1) : 0;
+    const cls   = delta > 0 ? 'growth-up' : delta < 0 ? 'growth-down' : 'growth-flat';
+    const sign  = delta >= 0 ? '+' : '';
+    if (deltaEl) deltaEl.innerHTML = `<span class="growth-delta ${cls}">${sign}${fmtNum(delta)} (${sign}${pct}%)</span>`;
+
+    // SVG sparkline
+    const W = 300, H = 70, PAD = 4;
+    const vals = snaps.map(s => s.followers);
+    const minV = Math.min(...vals), maxV = Math.max(...vals);
+    const range = maxV - minV || 1;
+    const pts = vals.map((v, i) => {
+      const x = PAD + (i / (vals.length - 1)) * (W - PAD * 2);
+      const y = H - PAD - ((v - minV) / range) * (H - PAD * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#1d4ed8';
+    const areaPoints  = `${PAD},${H} ` + pts.join(' ') + ` ${W - PAD},${H}`;
+
+    chartEl.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="g-${creatorId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${accentColor}" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="${accentColor}" stop-opacity="0.02"/>
+          </linearGradient>
+        </defs>
+        <polygon points="${areaPoints}" fill="url(#g-${creatorId})"/>
+        <polyline points="${pts.join(' ')}" fill="none" stroke="${accentColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${pts[pts.length-1].split(',')[0]}" cy="${pts[pts.length-1].split(',')[1]}" r="3" fill="${accentColor}"/>
+        <text x="${PAD}" y="${H - 1}" font-size="9" fill="var(--text3)">${snaps[0].date}</text>
+        <text x="${W - PAD}" y="${H - 1}" font-size="9" fill="var(--text3)" text-anchor="end">${snaps[snaps.length-1].date}</text>
+      </svg>`;
+  } catch(e) {
+    if (chartEl) chartEl.innerHTML = '<div class="growth-no-data">Growth data unavailable</div>';
+  }
+}
+
+// ── AI Outreach Writer ─────────────────────────────────────────────────────────
+async function aiWriteEmail(creatorId) {
+  const btn  = document.getElementById(`ai-write-btn-${creatorId}`);
+  const res  = document.getElementById(`ai-result-${creatorId}`);
+  const tone = document.getElementById(`ai-tone-${creatorId}`)?.value || 'friendly';
+  const brand = document.getElementById(`ai-brand-${creatorId}`)?.value || 'Our Brand';
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Writing…'; }
+
+  try {
+    const r = await fetch('/api/ai/write-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ creator_id: creatorId, tone, brand_name: brand }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'AI error');
+
+    const subjEl = document.getElementById(`ai-subj-${creatorId}`);
+    const bodyEl = document.getElementById(`ai-body-${creatorId}`);
+    if (subjEl) subjEl.value = data.subject;
+    if (bodyEl) bodyEl.value = data.body;
+    if (res) res.style.display = 'block';
+  } catch(e) {
+    alert('AI Writer error: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg> Γράψε Email'; }
+  }
+}
+
+function copyAiEmail(creatorId) {
+  const subj = document.getElementById(`ai-subj-${creatorId}`)?.value || '';
+  const body = document.getElementById(`ai-body-${creatorId}`)?.value || '';
+  navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
+}
+
+function useAiEmailInComposer(creatorId) {
+  const subj = document.getElementById(`ai-subj-${creatorId}`)?.value || '';
+  const body = document.getElementById(`ai-body-${creatorId}`)?.value || '';
+  // Pre-fill the bulk template modal
+  document.getElementById('tpl-subject').value = subj;
+  document.getElementById('tpl-body').value = body;
+  closeDrawer();
+  // Make sure the creator is in the selectedCreators map if it has email
+  const creator = document.querySelector(`[data-creator-id="${creatorId}"]`)?._creatorData;
+  if (creator?.email) selectedCreators.set(creatorId, creator);
+  updateBulkBar();
+  openTemplateModal();
+}
+
+async function aiWriteForBulk() {
+  const withEmail = [...selectedCreators.values()].filter(c => c.email);
+  if (!withEmail.length) { alert('Select at least one creator with email first.'); return; }
+  const first = withEmail[0];
+  const btn = document.getElementById('ai-write-bulk-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI Writing…'; }
+
+  try {
+    const r = await fetch('/api/ai/write-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ creator_id: first.id, tone: 'friendly', brand_name: 'Our Brand' }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || 'AI error');
+    document.getElementById('tpl-subject').value = data.subject;
+    document.getElementById('tpl-body').value = data.body;
+    updatePreview();
+  } catch(e) {
+    alert('AI Writer: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg> AI Write'; }
+  }
+}
+
 // ── Boot ───────────────────────────────────────────────────────────────────────
-init();
+// Check license before loading anything
+if (!checkLicense()) {
+  // Gate is shown; init() called after successful verification
+} else {
+  init();
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,45 @@
+name: Daily Creator Snapshots
+
+on:
+  schedule:
+    # Every day at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no writes)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  snapshot:
+    name: Take daily follower snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        working-directory: creator-scan
+        run: pip install -r requirements.txt
+
+      - name: Run snapshots
+        working-directory: creator-scan
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python take_snapshots.py --dry-run
+          else
+            python take_snapshots.py
+          fi

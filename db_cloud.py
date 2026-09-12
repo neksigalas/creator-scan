@@ -166,6 +166,242 @@ def get_stats() -> dict:
             "by_platform": by_platform, "by_niche": by_niche}
 
 
+# ── License Keys (paywall) ───────────────────────────────────────────────────
+
+def create_license_key(email: str, tier: str = "starter") -> dict:
+    """Create a new license key (admin only)."""
+    key = f"cs_lic_{secrets.token_urlsafe(24)}"
+    data = {
+        "key": key, "email": email, "tier": tier,
+        "active": True,
+        "created_at": datetime.utcnow().isoformat(),
+        "usage_count": 0,
+    }
+    client = get_client()
+    result = client.table("cs_license_keys").insert(data).execute()
+    return result.data[0] if result.data else data
+
+
+def validate_license_key(key: str) -> dict | None:
+    """Validate a license key. Returns key info or None if invalid."""
+    if not key or not key.startswith("cs_lic_"):
+        return None
+    client = get_client()
+    result = (client.table("cs_license_keys")
+              .select("*")
+              .eq("key", key)
+              .eq("active", True)
+              .execute())
+    if not result.data:
+        return None
+    info = result.data[0]
+    # Check expiry
+    if info.get("expires_at"):
+        from datetime import timezone
+        exp = datetime.fromisoformat(info["expires_at"].replace("Z", "+00:00"))
+        if exp < datetime.now(tz=timezone.utc):
+            return None
+    # Update usage
+    client.table("cs_license_keys").update({
+        "last_used_at": datetime.utcnow().isoformat(),
+        "usage_count": (info.get("usage_count") or 0) + 1,
+    }).eq("key", key).execute()
+    return info
+
+
+def list_license_keys() -> list[dict]:
+    result = (get_client().table("cs_license_keys")
+              .select("*").order("created_at", desc=True).execute())
+    return result.data or []
+
+
+def revoke_license_key(key: str) -> bool:
+    result = (get_client().table("cs_license_keys")
+              .update({"active": False}).eq("key", key).execute())
+    return bool(result.data)
+
+
+# ── Authenticity Score ────────────────────────────────────────────────────────
+
+_NICHE_AVG_ER: dict[str, float] = {
+    "Gaming": 3.5, "Tech": 2.8, "Fitness": 5.5, "Beauty": 4.5,
+    "Food": 4.2, "Travel": 3.0, "Finance": 2.5, "Education": 3.8,
+    "Music": 4.0, "Art & Design": 6.0, "Fashion": 3.5, "Comedy": 5.0,
+    "Lifestyle": 4.0, "Parenting": 5.2, "DIY & Crafts": 5.8,
+    "Sports": 4.5, "Pets & Animals": 6.2, "Business": 2.8,
+}
+_DEFAULT_AVG_ER = 3.5
+
+
+def compute_auth_score(creator: dict) -> int:
+    """
+    Compute authenticity score 0-100.
+    Higher = more likely to be a real engaged creator.
+    Low scores may indicate fake/purchased followers.
+    """
+    score = 50
+
+    followers  = creator.get("followers") or 0
+    avg_views  = creator.get("avg_views") or 0
+    er         = creator.get("engagement_rate")
+    bio        = creator.get("bio") or ""
+    email      = creator.get("email") or ""
+    platform   = creator.get("platform") or ""
+    niche      = creator.get("niche") or ""
+
+    # ── ER check (most important signal) ─────────────────
+    niche_avg = _NICHE_AVG_ER.get(niche, _DEFAULT_AVG_ER)
+    if er is not None:
+        if er >= niche_avg * 1.8:
+            score += 22   # well above average → very engaged
+        elif er >= niche_avg:
+            score += 14   # above average
+        elif er >= niche_avg * 0.5:
+            score += 5    # somewhat below average
+        elif er >= niche_avg * 0.2:
+            score -= 15   # well below average
+        else:
+            score -= 28   # very low → suspicious
+
+    # ── View-to-follower ratio (YouTube / TikTok) ─────────
+    if platform in ("youtube", "tiktok") and avg_views and followers:
+        vtr = avg_views / followers
+        if vtr >= 0.12:
+            score += 12
+        elif vtr >= 0.04:
+            score += 5
+        elif vtr < 0.01:
+            score -= 12
+
+    # ── Bio completeness ──────────────────────────────────
+    blen = len(bio.strip())
+    if blen >= 100:
+        score += 12
+    elif blen >= 30:
+        score += 6
+
+    # ── Email presence ────────────────────────────────────
+    if email:
+        score += 8
+
+    # ── Platform reliability bonus ────────────────────────
+    if platform in ("youtube", "twitch"):
+        score += 4   # these APIs return accurate follower counts
+
+    return max(0, min(100, score))
+
+
+def backfill_auth_scores(batch_size: int = 200) -> int:
+    """Compute and store auth_score for all creators missing one."""
+    client = get_client()
+    updated = 0
+    offset = 0
+    while True:
+        result = (client.table("cs_creators")
+                  .select("*")
+                  .is_("auth_score", "null")
+                  .limit(batch_size)
+                  .offset(offset)
+                  .execute())
+        rows = result.data or []
+        if not rows:
+            break
+        for row in rows:
+            score = compute_auth_score(row)
+            client.table("cs_creators").update({"auth_score": score}).eq("id", row["id"]).execute()
+            updated += 1
+        offset += batch_size
+    return updated
+
+
+# ── Growth Tracking (follower snapshots) ─────────────────────────────────────
+
+def take_snapshot(creator_id: int, followers: int) -> bool:
+    """Save today's follower count for a creator. No-op if already saved today."""
+    from datetime import date
+    client = get_client()
+    today = date.today().isoformat()
+    try:
+        client.table("cs_creator_snapshots").upsert(
+            {"creator_id": creator_id, "followers": followers, "date": today},
+            on_conflict="creator_id,date"
+        ).execute()
+        return True
+    except Exception:
+        return False
+
+
+def get_creator_snapshots(creator_id: int, days: int = 30) -> list[dict]:
+    """Return follower history for the last N days."""
+    client = get_client()
+    result = (client.table("cs_creator_snapshots")
+              .select("date,followers")
+              .eq("creator_id", creator_id)
+              .order("date", desc=False)
+              .limit(days)
+              .execute())
+    return result.data or []
+
+
+def take_all_snapshots() -> dict:
+    """Snapshot today's follower count for all creators. Called by daily cron.
+    Returns dict with total, written, skipped, errors counts."""
+    client = get_client()
+    total = written = skipped = errors = 0
+    offset = 0
+    while True:
+        result = (client.table("cs_creators")
+                  .select("id,followers")
+                  .limit(500)
+                  .offset(offset)
+                  .execute())
+        rows = result.data or []
+        if not rows:
+            break
+        for row in rows:
+            total += 1
+            if row.get("followers"):
+                try:
+                    ok = take_snapshot(row["id"], row["followers"])
+                    if ok:
+                        written += 1
+                    else:
+                        skipped += 1
+                except Exception:
+                    errors += 1
+            else:
+                skipped += 1
+        offset += 500
+    return {"total": total, "written": written, "skipped": skipped, "errors": errors}
+
+
+# ── Creator Join Requests ─────────────────────────────────────────────────────
+
+def submit_join_request(data: dict) -> dict:
+    """Save a self-registration request."""
+    row = {
+        "platform":      data.get("platform", ""),
+        "username":      data.get("username", ""),
+        "profile_url":   data.get("profile_url", ""),
+        "niche":         data.get("niche", ""),
+        "followers":     data.get("followers"),
+        "contact_email": data.get("contact_email", ""),
+        "bio":           data.get("bio", ""),
+        "status":        "pending",
+        "created_at":    datetime.utcnow().isoformat(),
+    }
+    client = get_client()
+    result = client.table("cs_join_requests").insert(row).execute()
+    return result.data[0] if result.data else row
+
+
+def list_join_requests(status: str = "pending") -> list[dict]:
+    result = (get_client().table("cs_join_requests")
+              .select("*").eq("status", status)
+              .order("created_at", desc=True).execute())
+    return result.data or []
+
+
 # ── API Keys ──────────────────────────────────────────────────────────────────
 
 TIER_LIMITS = {"free": 100, "pro": 5000, "unlimited": 999_999}

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorScan — Join as a Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0a0c14;
+    --bg2:     #12151f;
+    --bg3:     #1a1e2e;
+    --border:  rgba(255,255,255,0.08);
+    --text1:   #f0f4ff;
+    --text2:   #9ba3c0;
+    --text3:   #5a6080;
+    --accent:  #00F5A0;
+    --accent2: #00d48b;
+    --error:   #f87171;
+    --radius:  12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text1);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    margin-bottom: 48px;
+  }
+  .logo span { color: var(--text2); font-weight: 700; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+    max-width: 520px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(0,245,160,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,245,160,0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.15;
+    color: var(--text1);
+    margin-bottom: 14px;
+  }
+  .hero p {
+    color: var(--text2);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* Card */
+  .card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+  }
+
+  /* Form */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.3px;
+  }
+  .field label .req { color: var(--accent); margin-left: 2px; }
+  .field input,
+  .field select,
+  .field textarea {
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text1);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--text3); }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus { border-color: var(--accent); }
+  .field select option { background: var(--bg3); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* Row layout */
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Platform selector */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .platform-opt {
+    cursor: pointer;
+    background: var(--bg3);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .platform-opt .plat-icon { font-size: 22px; }
+  .platform-opt:hover { border-color: rgba(0,245,160,0.35); color: var(--text1); }
+  .platform-opt.selected {
+    border-color: var(--accent);
+    background: rgba(0,245,160,0.08);
+    color: var(--accent);
+  }
+  input[name="platform"] { display: none; }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #0a0c14;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover { background: var(--accent2); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Status messages */
+  .error-msg {
+    color: var(--error);
+    font-size: 13px;
+    margin-top: 4px;
+    display: none;
+  }
+  .global-error {
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.25);
+    border-radius: 8px;
+    color: var(--error);
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  /* Success */
+  .success-screen {
+    text-align: center;
+    padding: 40px 20px;
+    display: none;
+  }
+  .success-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .success-screen h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+  .success-screen p {
+    color: var(--text2);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Benefits strip */
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 32px;
+    max-width: 520px;
+    width: 100%;
+  }
+  .benefit {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .benefit .b-icon { font-size: 24px; margin-bottom: 8px; }
+  .benefit .b-title { font-size: 13px; font-weight: 600; color: var(--text1); margin-bottom: 4px; }
+  .benefit .b-sub { font-size: 12px; color: var(--text3); line-height: 1.4; }
+
+  @media (max-width: 500px) {
+    .card { padding: 24px 20px; }
+    .field-row { grid-template-columns: 1fr; }
+    .platform-grid { grid-template-columns: repeat(2, 1fr); }
+    .benefits { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<a class="logo" href="/">CreatorScan<span>.io</span></a>
+
+<div class="hero">
+  <div class="hero-badge">🎯 Creator Directory</div>
+  <h1>Get discovered by brands</h1>
+  <p>Register your channel and let brands find you for paid collaborations, gifting, and ambassador deals.</p>
+</div>
+
+<div class="card" id="form-card">
+  <div class="global-error" id="global-error"></div>
+
+  <form id="join-form">
+    <div class="field-group">
+
+      <!-- Platform -->
+      <div class="field">
+        <label>Platform <span class="req">*</span></label>
+        <div class="platform-grid">
+          <div class="platform-opt" data-val="instagram" onclick="selectPlatform('instagram')">
+            <span class="plat-icon">📸</span>Instagram
+          </div>
+          <div class="platform-opt" data-val="youtube" onclick="selectPlatform('youtube')">
+            <span class="plat-icon">▶️</span>YouTube
+          </div>
+          <div class="platform-opt" data-val="tiktok" onclick="selectPlatform('tiktok')">
+            <span class="plat-icon">🎵</span>TikTok
+          </div>
+          <div class="platform-opt" data-val="twitter" onclick="selectPlatform('twitter')">
+            <span class="plat-icon">🐦</span>Twitter/X
+          </div>
+          <div class="platform-opt" data-val="twitch" onclick="selectPlatform('twitch')">
+            <span class="plat-icon">🎮</span>Twitch
+          </div>
+          <div class="platform-opt" data-val="linkedin" onclick="selectPlatform('linkedin')">
+            <span class="plat-icon">💼</span>LinkedIn
+          </div>
+        </div>
+        <input type="hidden" name="platform" id="platform-val" required>
+        <span class="error-msg" id="err-platform">Please select a platform</span>
+      </div>
+
+      <!-- Username & Followers -->
+      <div class="field-row">
+        <div class="field">
+          <label>Username / Handle <span class="req">*</span></label>
+          <input type="text" name="username" id="username" placeholder="@yourchannel" required>
+          <span class="error-msg" id="err-username">Required</span>
+        </div>
+        <div class="field">
+          <label>Followers</label>
+          <input type="number" name="followers" id="followers" placeholder="e.g. 25000" min="1000">
+        </div>
+      </div>
+
+      <!-- Profile URL -->
+      <div class="field">
+        <label>Profile URL</label>
+        <input type="url" name="profile_url" id="profile_url" placeholder="https://instagram.com/yourchannel">
+      </div>
+
+      <!-- Niche & Email -->
+      <div class="field-row">
+        <div class="field">
+          <label>Niche / Category</label>
+          <select name="niche" id="niche">
+            <option value="">— Select —</option>
+            <option>Gaming</option>
+            <option>Fitness</option>
+            <option>Beauty</option>
+            <option>Fashion</option>
+            <option>Food</option>
+            <option>Travel</option>
+            <option>Tech</option>
+            <option>Finance</option>
+            <option>Education</option>
+            <option>Lifestyle</option>
+            <option>Parenting</option>
+            <option>Music</option>
+            <option>Art</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Contact Email <span class="req">*</span></label>
+          <input type="email" name="contact_email" id="contact_email" placeholder="you@email.com" required>
+          <span class="error-msg" id="err-email">Enter a valid email</span>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="field">
+        <label>Short Bio</label>
+        <textarea name="bio" id="bio" placeholder="Tell brands what you create and who your audience is…"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submit-btn">
+        🚀 Register as Creator
+      </button>
+
+    </div>
+  </form>
+
+  <!-- Success state -->
+  <div class="success-screen" id="success-screen">
+    <span class="success-icon">🎉</span>
+    <h2>You're on the list!</h2>
+    <p>We've received your profile. Our team will review it and add you to the directory within 24–48 hours. Brands will be able to discover and contact you directly.</p>
+  </div>
+</div>
+
+<!-- Benefits -->
+<div class="benefits">
+  <div class="benefit">
+    <div class="b-icon">💰</div>
+    <div class="b-title">Brand Deals</div>
+    <div class="b-sub">Get found by brands looking for creators in your niche</div>
+  </div>
+  <div class="benefit">
+    <div class="b-icon">📊</div>
+    <div class="b-title">Free Analytics</div>
+    <div class="b-sub">See your authenticity score and growth trends</div>
+  </div>
+  <div class="benefit">
+    <div class="b-icon">🔒</div>
+    <div class="b-title">Your Data</div>
+    <div class="b-sub">We never sell your contact details to third parties</div>
+  </div>
+</div>
+
+<script>
+  function selectPlatform(val) {
+    document.querySelectorAll('.platform-opt').forEach(el => el.classList.remove('selected'));
+    document.querySelector(`.platform-opt[data-val="${val}"]`).classList.add('selected');
+    document.getElementById('platform-val').value = val;
+    document.getElementById('err-platform').style.display = 'none';
+  }
+
+  document.getElementById('join-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Validate platform
+    const platform = document.getElementById('platform-val').value;
+    if (!platform) {
+      document.getElementById('err-platform').style.display = 'block';
+      return;
+    }
+
+    const username = document.getElementById('username').value.trim().replace(/^@/, '');
+    if (!username) {
+      document.getElementById('err-username').style.display = 'block';
+      return;
+    }
+
+    const email = document.getElementById('contact_email').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('err-email').style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Submitting…';
+
+    const payload = {
+      platform,
+      username,
+      profile_url: document.getElementById('profile_url').value.trim() || null,
+      niche: document.getElementById('niche').value || null,
+      followers: parseInt(document.getElementById('followers').value) || null,
+      contact_email: email,
+      bio: document.getElementById('bio').value.trim() || null,
+    };
+
+    try {
+      const r = await fetch('/api/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || 'Submission failed');
+
+      document.getElementById('join-form').style.display = 'none';
+      document.getElementById('success-screen').style.display = 'block';
+    } catch(err) {
+      const ge = document.getElementById('global-error');
+      ge.textContent = err.message;
+      ge.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🚀 Register as Creator';
+    }
+  });
+</script>
+</body>
+</html>
