@@ -16,13 +16,14 @@ import db_cloud as db
 
 
 def cmd_create(args):
-    key = db.create_license_key(email=args.email, tier=args.tier)
-    print(f"\n✅ License key created!\n")
+    row = db.create_license_key(email=args.email, tier=args.tier)
+    key = row["key"] if isinstance(row, dict) else row
+    print(f"\nLicense key created!\n")
     print(f"  Key:   {key}")
     print(f"  Email: {args.email or '(none)'}")
     print(f"  Tier:  {args.tier}\n")
-    print(f"Share this key with the customer:")
-    print(f"\n  {key}\n")
+    print(f"Share this key with the customer:\n")
+    print(f"  {key}\n")
 
 
 def cmd_list(args):
@@ -46,7 +47,7 @@ def cmd_revoke(args):
     key = args.key
     ok = db.revoke_license_key(key)
     if ok:
-        print(f"\n🔴 Revoked: {key}\n")
+        print(f"\n[REVOKED] {key}\n")
     else:
         print(f"\n⚠️  Key not found or already revoked: {key}\n")
         sys.exit(1)

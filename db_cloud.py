@@ -292,16 +292,15 @@ def compute_auth_score(creator: dict) -> int:
 
 
 def backfill_auth_scores(batch_size: int = 200) -> int:
-    """Compute and store auth_score for all creators missing one."""
+    """Compute and store auth_score for all creators missing one.
+    Always fetches from offset=0 since updated rows leave the IS NULL result set."""
     client = get_client()
     updated = 0
-    offset = 0
     while True:
         result = (client.table("cs_creators")
                   .select("*")
                   .is_("auth_score", "null")
                   .limit(batch_size)
-                  .offset(offset)
                   .execute())
         rows = result.data or []
         if not rows:
@@ -310,7 +309,6 @@ def backfill_auth_scores(batch_size: int = 200) -> int:
             score = compute_auth_score(row)
             client.table("cs_creators").update({"auth_score": score}).eq("id", row["id"]).execute()
             updated += 1
-        offset += batch_size
     return updated
 
 
