@@ -55,6 +55,8 @@ ON_VERCEL       = bool(os.getenv("VERCEL"))
 
 # Paths that never require auth
 _PUBLIC_PATHS = {"/", "/join", "/api/auth/verify", "/api/join"}
+# Paths only the operator (HTTP Basic) may use — never a customer license
+_ADMIN_PREFIXES = ("/api/admin", "/api/keys", "/api-keys", "/api/settings", "/api/scan", "/docs", "/openapi.json")
 
 
 def _basic_authorized(header: str) -> bool:
@@ -100,6 +102,14 @@ async def access_gate(request: Request, call_next):
     # /v1/* keeps its own API-key auth
     if path.startswith("/v1/"):
         return await call_next(request)
+
+    # Operator-only routes: a paying customer's license must not reach them.
+    # Before this, any license holder could mint new licenses, change the shared
+    # SMTP settings every customer's bulk send uses, manage API keys or start scans.
+    if path.startswith(_ADMIN_PREFIXES):
+        if _basic_authorized(request.headers.get("authorization", "")) or (not ACCESS_PASSWORD and not ON_VERCEL):
+            return await call_next(request)
+        return Response('{"error":"Admin only"}', status_code=403, media_type="application/json")
 
     # Check license key header (primary user auth)
     lic_key = request.headers.get("X-License", "")
