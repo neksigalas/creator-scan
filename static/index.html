@@ -2639,7 +2639,7 @@ function bulkSelectAllEmail() {
 }
 
 // ── Template Modal ─────────────────────────────────────────────────────────────
-function openTemplateModal() {
+async function openTemplateModal() {
   const withEmail = [...selectedCreators.values()].filter(c => c.email);
   if (!withEmail.length) {
     alert('No creators with email selected. Use "Select with Email" or select creators manually.');
