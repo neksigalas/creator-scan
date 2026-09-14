@@ -75,20 +75,38 @@ import time as _time
 _lic_cache: dict[str, tuple[dict, float]] = {}
 _LIC_TTL = 60.0
 
-def _license_authorized(key: str) -> bool:
+# Tiers in ascending order — each tier includes everything below it.
+_TIER_RANK = {"starter": 0, "pro": 1, "agency": 2}
+# Starter monthly CSV row cap (unlimited = -1)
+_STARTER_CSV_CAP = 500
+# Routes that require Pro or above (exact prefix match)
+_PRO_PREFIXES = ("/api/ai/write-email", "/api/outreach/send-bulk")
+
+def _license_info(key: str) -> dict | None:
+    """Return the validated license row (cached) or None."""
     if not key:
-        return False
+        return None
     now = _time.time()
     if key in _lic_cache:
         info, ts = _lic_cache[key]
         if now - ts < _LIC_TTL:
-            return info is not None
+            return info
     try:
         info = db.validate_license_key(key)
     except Exception:
         info = None
     _lic_cache[key] = (info, now)
-    return info is not None
+    return info
+
+def _license_authorized(key: str) -> bool:
+    return _license_info(key) is not None
+
+def _license_tier(key: str) -> str:
+    """Return the tier string for a validated key ('starter' default)."""
+    info = _license_info(key)
+    if not info:
+        return "starter"
+    return info.get("tier", "starter")
 
 
 @app.middleware("http")
@@ -114,6 +132,14 @@ async def access_gate(request: Request, call_next):
     # Check license key header (primary user auth)
     lic_key = request.headers.get("X-License", "")
     if _license_authorized(lic_key):
+        # Tier gating: some routes require Pro or higher
+        if path.startswith(_PRO_PREFIXES):
+            tier = _license_tier(lic_key)
+            if _TIER_RANK.get(tier, 0) < _TIER_RANK["pro"]:
+                return Response(
+                    '{"error":"Pro feature","hint":"Upgrade to Pro to use the AI writer and bulk send","upgrade":"/pricing"}',
+                    status_code=403, media_type="application/json",
+                )
         return await call_next(request)
 
     # Fallback: HTTP Basic (admin / local dev)
@@ -304,16 +330,22 @@ async def api_creator_detail(creator_id: int):
 
 @app.get("/api/export/csv")
 async def api_export_csv(
+    request:      Request,
     platform:     Optional[str] = None,
     niche:        Optional[str] = None,
     min_followers: int = 2_000,
     max_followers: int = 100_000,
     has_email:    Optional[bool] = None,
 ):
+    # Determine row cap based on tier
+    lic_key = request.headers.get("X-License", "")
+    tier = _license_tier(lic_key) if lic_key else "starter"
+    row_limit = _STARTER_CSV_CAP if _TIER_RANK.get(tier, 0) < _TIER_RANK["pro"] else 100_000
+
     creators = db.query_creators(
         platform=platform, niche=niche,
         min_followers=min_followers, max_followers=max_followers,
-        has_email=has_email, limit=100_000,
+        has_email=has_email, limit=row_limit,
     )
     if not creators:
         return JSONResponse({"error": "Δεν βρέθηκαν creators"}, status_code=404)
@@ -325,10 +357,17 @@ async def api_export_csv(
     writer.writeheader()
     writer.writerows(creators)
 
+    capped = row_limit == _STARTER_CSV_CAP
+    filename = f"creators_export{'_capped' if capped else ''}.csv"
+    headers = {"Content-Disposition": f"attachment; filename={filename}"}
+    if capped:
+        headers["X-Row-Cap"] = str(_STARTER_CSV_CAP)
+        headers["X-Upgrade-Hint"] = "Upgrade to Pro for unlimited CSV export"
+
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=creators_export.csv"},
+        headers=headers,
     )
 
 

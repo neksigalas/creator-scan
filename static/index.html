@@ -798,6 +798,43 @@ input, select { font-family: inherit; }
 .ai-btn:disabled { opacity: .5; cursor: default; }
 .ai-btn svg { flex-shrink: 0; }
 
+/* ── PRO LOCK ────────────────────────────────────────────────────────────────── */
+.pro-lock-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pro-lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,20,0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+  border-radius: 8px;
+  border: 1.5px dashed rgba(255,255,255,0.15);
+}
+.pro-lock-badge {
+  background: linear-gradient(135deg,#6366f1,#8b5cf6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.pro-lock-link {
+  font-size: 12px;
+  color: var(--text2);
+  text-decoration: none;
+}
+.pro-lock-link:hover { color: var(--text1); text-decoration: underline; }
+
 /* ── GROWTH CHART ────────────────────────────────────────────────────────────── */
 .growth-chart-wrap {
   width: 100%;
@@ -1702,10 +1739,8 @@ input, select { font-family: inherit; }
         <div>
           <div class="tpl-label" style="display:flex;align-items:center;justify-content:space-between">
             Quick Templates
-            <button class="ai-btn" id="ai-write-bulk-btn" onclick="aiWriteForBulk()" title="AI writes a custom email for the first selected creator">
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2zm0 0"/><path d="M6 2L4.9 5.1 2 6l2.9 1.1L6 10l1.1-2.9L10 6 7.1 4.9 6 2z" opacity=".6"/></svg>
-              AI Write
-            </button>
+            <!-- AI Write is Pro-only; rendered by JS in openTemplateModal() -->
+            <span id="ai-write-bulk-slot"></span>
           </div>
           <div class="tpl-presets">
             <button class="tpl-preset-btn" onclick="loadPreset('collab')">🤝 Collaboration</button>
@@ -1764,10 +1799,8 @@ input, select { font-family: inherit; }
         Dry run (δοκιμή — δεν στέλνει)
       </label>
       <button class="modal-btn modal-btn-cancel" onclick="closeTemplateModal()">Ακύρωση</button>
-      <button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        Αποστολή
-      </button>
+      <!-- Send button rendered by JS (Pro-locked for Starter) -->
+      <span id="tpl-send-slot"></span>
     </div>
   </div>
 </div>
@@ -2366,12 +2399,41 @@ function prevPage() { state.offset = Math.max(0, state.offset - state.limit); lo
 function nextPage() { state.offset += state.limit; loadCreators(); scrollTo(0,0); }
 
 // ── Export ─────────────────────────────────────────────────────────────────────
-function exportCSV() {
+async function exportCSV() {
   const p = new URLSearchParams({ min_followers: state.min, max_followers: state.max });
   if (state.platform) p.set('platform', state.platform);
   if (state.niche)    p.set('niche', state.niche);
   if (state.email)    p.set('has_email', 'true');
-  window.location.href = '/api/export/csv?' + p;
+
+  // Must use fetch (not location.href) so the X-License header is included
+  const btn = document.getElementById('export-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Exporting…'; }
+  try {
+    const res = await fetch('/api/export/csv?' + p);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || 'Export failed');
+      return;
+    }
+    // Check if capped and warn
+    const cap = res.headers.get('X-Row-Cap');
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'creators_export.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    if (cap) {
+      setTimeout(() => alert(`Starter plan exports up to ${cap} rows.\nUpgrade to Pro for unlimited export → /pricing`), 200);
+    }
+  } catch(e) {
+    alert('Export error: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ Export CSV'; }
+  }
 }
 
 // ── Scan ───────────────────────────────────────────────────────────────────────
@@ -2548,6 +2610,29 @@ function openTemplateModal() {
   // Load default template if empty
   if (!document.getElementById('tpl-subject').value) loadPreset('collab');
   updatePreview();
+
+  // Inject Pro-gated UI into slots
+  const aiSlot = document.getElementById('ai-write-bulk-slot');
+  if (aiSlot) {
+    aiSlot.innerHTML = isProTier()
+      ? `<button class="ai-btn" id="ai-write-bulk-btn" onclick="aiWriteForBulk()" title="AI writes a custom email for the first selected creator">
+           <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg>
+           AI Write
+         </button>`
+      : `<a href="/pricing" style="font-size:11px;color:#8b5cf6;text-decoration:none;font-weight:600">⭐ Pro: AI Write →</a>`;
+  }
+  const sendSlot = document.getElementById('tpl-send-slot');
+  if (sendSlot) {
+    sendSlot.innerHTML = isProTier()
+      ? `<button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
+           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+           Αποστολή
+         </button>`
+      : `<a href="/pricing" class="tpl-send-btn" style="text-decoration:none;opacity:0.8" title="Upgrade to Pro to send bulk emails">
+           ⭐ Upgrade to Pro
+         </a>`;
+  }
+
   document.getElementById('template-modal').hidden = false;
 }
 
@@ -2597,6 +2682,10 @@ function updatePreview() {
 }
 
 async function sendBulkEmails() {
+  if (!isProTier()) {
+    window.location.href = '/pricing';
+    return;
+  }
   const withEmail = [...selectedCreators.values()].filter(c => c.email);
   if (!withEmail.length) return;
   const subject  = document.getElementById('tpl-subject').value.trim();
@@ -2856,9 +2945,10 @@ async function openDrawer(creatorId) {
         </div>
       </div>
 
-      <!-- AI Outreach Writer -->
+      <!-- AI Outreach Writer (Pro feature) -->
       <div class="d-section">
-        <div class="d-section-title">AI Outreach Writer</div>
+        <div class="d-section-title">AI Outreach Writer <span class="pro-lock-badge" style="font-size:10px;vertical-align:middle;margin-left:6px">PRO</span></div>
+        ${isProTier() ? `
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
           <select id="ai-tone-${c.id}" class="sort-select" style="flex:1;min-width:100px">
             <option value="friendly">😊 Friendly</option>
@@ -2881,6 +2971,21 @@ async function openDrawer(creatorId) {
             <button class="d-copy-btn" onclick="copyAiEmail(${c.id})">Αντιγραφή</button>
           </div>
         </div>
+        ` : `
+        <div class="pro-lock-wrap" style="min-height:80px">
+          <div style="padding:10px;opacity:0.3;pointer-events:none">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="sort-select" style="flex:1;height:34px;background:var(--bg3);border-radius:6px"></div>
+              <div class="filter-input" style="flex:1;height:34px;background:var(--bg3);border-radius:6px"></div>
+              <div class="ai-btn" style="width:110px;height:34px;background:#6366f1;border-radius:6px"></div>
+            </div>
+          </div>
+          <div class="pro-lock-overlay">
+            <span class="pro-lock-badge">⭐ Pro Feature</span>
+            <a class="pro-lock-link" href="/pricing">Upgrade to Pro →</a>
+          </div>
+        </div>
+        `}
       </div>
 
       <!-- Open profile -->
@@ -2959,7 +3064,13 @@ function authScoreBadge(score, large = false) {
 }
 
 // ── License Key Auth ───────────────────────────────────────────────────────────
-const CS_LICENSE_KEY = 'cs_license';
+const CS_LICENSE_KEY  = 'cs_license';
+const CS_LICENSE_TIER = 'cs_license_tier';  // 'starter' | 'pro' | 'agency'
+
+function isProTier() {
+  const t = localStorage.getItem(CS_LICENSE_TIER) || 'starter';
+  return t === 'pro' || t === 'agency';
+}
 
 // Global fetch interceptor — attaches license key to all /api/ requests
 (function() {
@@ -2995,6 +3106,7 @@ async function verifyLicense() {
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || 'Invalid key');
     localStorage.setItem(CS_LICENSE_KEY, key);
+    localStorage.setItem(CS_LICENSE_TIER, data.tier || 'starter');
     document.getElementById('license-gate').hidden = true;
     init();
   } catch(e) {
@@ -3005,8 +3117,9 @@ async function verifyLicense() {
 }
 
 function useDevMode() {
-  // Local dev: skip auth
+  // Local dev: skip auth — treat as Pro so all features are visible
   localStorage.setItem(CS_LICENSE_KEY, '__dev__');
+  localStorage.setItem(CS_LICENSE_TIER, 'pro');
   document.getElementById('license-gate').hidden = true;
   init();
 }
