@@ -34,7 +34,7 @@
   nav a { color: var(--ink-2); text-decoration: none; }
   nav a.signin { color: var(--ink); font-weight: 600; }
 
-  .hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: 48px; align-items: center; padding: 44px 0 64px; }
+  .hero { display: grid; grid-template-columns: 0.9fr 1.2fr; gap: 48px; align-items: center; padding: 44px 0 64px; }
   .eyebrow { font: 500 13px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin-bottom: 18px; }
   h1 { font: 800 clamp(38px, 5vw, 58px)/1.02 var(--display); letter-spacing: -0.035em; text-wrap: balance; }
   .lede { margin-top: 20px; font-size: 19px; color: var(--ink-2); max-width: 34ch; }
@@ -55,13 +55,13 @@
   .sheet-scroll { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th { text-align: left; font: 500 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
-       padding: 12px 16px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
-  td { padding: 12px 16px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+       padding: 12px 12px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  td { padding: 12px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
   tr:last-child td { border-bottom: 0; }
   td.num { font: 400 13.5px var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
   th.num { text-align: right; }
   .name { font-weight: 600; } .sub { font-size: 12.5px; color: var(--ink-3); }
-  .mail { font: 400 13px var(--mono); color: var(--teal); }
+  .mail { font: 400 12px var(--mono); color: var(--teal); }
   .score { display: inline-block; min-width: 34px; text-align: center; font: 500 12.5px/1 var(--mono); padding: 5px 6px; border-radius: 6px; background: var(--teal-tint); color: var(--teal-2); }
   .score.mid { background: var(--amber-tint); color: var(--amber); }
   .sheet-note { padding: 10px 16px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--rule); }
@@ -151,10 +151,10 @@
         <table>
           <thead><tr><th>Creator</th><th class="num">Followers</th><th class="num">Eng.</th><th>Score</th><th>Business email</th></tr></thead>
           <tbody>
-            <tr><td><div class="name">Budget Bench</div><div class="sub">YouTube · personal finance</div></td><td class="num">24,300</td><td class="num">6.1%</td><td><span class="score">82</span></td><td class="mail">hello@budgetbench.co</td></tr>
-            <tr><td><div class="name">The Side Ledger</div><div class="sub">YouTube · side income</div></td><td class="num">41,900</td><td class="num">4.4%</td><td><span class="score">74</span></td><td class="mail">collabs@sideledger.io</td></tr>
-            <tr><td><div class="name">coinlessclara</div><div class="sub">TikTok · saving money</div></td><td class="num">17,800</td><td class="num">9.8%</td><td><span class="score">88</span></td><td class="mail">clara@coinless.me</td></tr>
-            <tr><td><div class="name">IndexAndChill</div><div class="sub">Twitch · investing streams</div></td><td class="num">12,050</td><td class="num">2.2%</td><td><span class="score mid">55</span></td><td class="mail">biz@indexandchill.tv</td></tr>
+            <tr><td><div class="name">Budget Bench</div><div class="sub">YouTube · personal finance</div></td><td class="num">24,300</td><td class="num">6.1%</td><td><span class="score">82</span></td><td class="mail">hi@budgetbench.example</td></tr>
+            <tr><td><div class="name">The Side Ledger</div><div class="sub">YouTube · side income</div></td><td class="num">41,900</td><td class="num">4.4%</td><td><span class="score">74</span></td><td class="mail">hi@sideledger.example</td></tr>
+            <tr><td><div class="name">coinlessclara</div><div class="sub">TikTok · saving money</div></td><td class="num">17,800</td><td class="num">9.8%</td><td><span class="score">88</span></td><td class="mail">clara@coinless.example</td></tr>
+            <tr><td><div class="name">IndexAndChill</div><div class="sub">Twitch · investing streams</div></td><td class="num">12,050</td><td class="num">2.2%</td><td><span class="score mid">55</span></td><td class="mail">biz@ixchill.example</td></tr>
           </tbody>
         </table>
       </div>
