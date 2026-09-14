@@ -798,6 +798,51 @@ input, select { font-family: inherit; }
 .ai-btn:disabled { opacity: .5; cursor: default; }
 .ai-btn svg { flex-shrink: 0; }
 
+/* ── SMTP CONNECT PANEL ──────────────────────────────────────────────────────── */
+.smtp-panel {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.smtp-panel h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text1);
+  margin-bottom: 4px;
+}
+.smtp-panel p {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.smtp-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px; }
+.smtp-connected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(5,150,105,0.1);
+  border: 1px solid rgba(5,150,105,0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text1);
+  margin-bottom: 12px;
+}
+.smtp-connected .smtp-ok { color: #059669; font-weight: 700; }
+.smtp-disconnect-btn {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.smtp-disconnect-btn:hover { color: #dc2626; }
+
 /* ── PRO LOCK ────────────────────────────────────────────────────────────────── */
 .pro-lock-wrap {
   position: relative;
@@ -1792,6 +1837,9 @@ input, select { font-family: inherit; }
       </div>
     </div>
 
+    <!-- SMTP status banner (shown for Pro, hidden for Starter) -->
+    <div id="smtp-banner-slot" style="padding:0 24px 4px"></div>
+
     <div class="tpl-footer">
       <div class="tpl-send-count" id="tpl-send-count">0 emails θα σταλούν</div>
       <label class="tpl-dry-run">
@@ -1799,17 +1847,20 @@ input, select { font-family: inherit; }
         Dry run (δοκιμή — δεν στέλνει)
       </label>
       <button class="modal-btn modal-btn-cancel" onclick="closeTemplateModal()">Ακύρωση</button>
-      <!-- Send button rendered by JS (Pro-locked for Starter) -->
+      <!-- Send button rendered by JS (Pro-locked for Starter, SMTP-gated for Pro) -->
       <span id="tpl-send-slot"></span>
     </div>
   </div>
 </div>
 
-<!-- ── SMTP SETTINGS MODAL ──────────────────────────────────────────────────── -->
+<!-- ── SMTP CONNECT MODAL ───────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="smtp-modal" hidden onclick="if(event.target===this)closeSmtpModal()">
   <div class="modal-box" style="width:500px">
-    <div class="modal-title">⚙️ SMTP Settings (Email)</div>
-    <div class="modal-sub">Gmail App Password συνιστάται. <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">Δημιουργία App Password</a></div>
+    <div class="modal-title">📬 Connect your email</div>
+    <div class="modal-sub">
+      Outreach emails send from <em>your</em> account — replies come to you, not us.
+      <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">Get a Gmail App Password →</a>
+    </div>
     <div class="smtp-grid" style="margin-top:14px">
       <div>
         <div class="tpl-label">SMTP Host</div>
@@ -1820,24 +1871,24 @@ input, select { font-family: inherit; }
         <input class="tpl-input" id="smtp-port" value="587" type="number">
       </div>
       <div class="full">
-        <div class="tpl-label">Email (Gmail)</div>
+        <div class="tpl-label">Your Email</div>
         <input class="tpl-input" id="smtp-user" type="email" placeholder="youremail@gmail.com">
       </div>
       <div class="full">
-        <div class="tpl-label">App Password</div>
-        <input class="tpl-input" id="smtp-pass" type="password" placeholder="xxxx xxxx xxxx xxxx">
+        <div class="tpl-label">App Password <span style="font-size:10px;color:var(--text3)">(not your account password)</span></div>
+        <input class="tpl-input" id="smtp-pass" type="password" placeholder="xxxx xxxx xxxx xxxx" autocomplete="new-password">
       </div>
       <div class="full">
-        <div class="tpl-label">From Name</div>
-        <input class="tpl-input" id="smtp-name" placeholder="CreatorScan Outreach">
+        <div class="tpl-label">Sender Name <span style="font-size:10px;color:var(--text3)">(optional)</span></div>
+        <input class="tpl-input" id="smtp-name" placeholder="Your Brand Name">
       </div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" onclick="testSmtp()" id="smtp-test-btn">Test Connection</button>
       <button class="modal-btn modal-btn-cancel" onclick="closeSmtpModal()">Ακύρωση</button>
-      <button class="modal-btn modal-btn-save" onclick="saveSmtp()">Αποθήκευση</button>
+      <button class="modal-btn modal-btn-save" onclick="saveSmtp()">Connect →</button>
     </div>
-    <div id="smtp-msg" style="margin-top:8px;font-size:12px;font-weight:600;color:var(--green)"></div>
+    <div id="smtp-msg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
   </div>
 </div>
 
@@ -2621,16 +2672,30 @@ function openTemplateModal() {
          </button>`
       : `<a href="/pricing" style="font-size:11px;color:#8b5cf6;text-decoration:none;font-weight:600">⭐ Pro: AI Write →</a>`;
   }
-  const sendSlot = document.getElementById('tpl-send-slot');
-  if (sendSlot) {
-    sendSlot.innerHTML = isProTier()
-      ? `<button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
-           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-           Αποστολή
-         </button>`
-      : `<a href="/pricing" class="tpl-send-btn" style="text-decoration:none;opacity:0.8" title="Upgrade to Pro to send bulk emails">
-           ⭐ Upgrade to Pro
-         </a>`;
+
+  // SMTP banner + send button — async because we need to know if SMTP is set
+  if (isProTier()) {
+    await refreshSmtpBanner();
+    const sendSlot = document.getElementById('tpl-send-slot');
+    if (sendSlot) {
+      sendSlot.innerHTML = _smtpConfigured
+        ? `<button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
+             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+             Αποστολή
+           </button>`
+        : `<button class="tpl-send-btn" style="opacity:0.5;cursor:not-allowed" disabled title="Connect your email first">
+             Αποστολή
+           </button>`;
+    }
+  } else {
+    // Starter: show upgrade link
+    const sendSlot = document.getElementById('tpl-send-slot');
+    if (sendSlot) {
+      sendSlot.innerHTML = `<a href="/pricing" class="tpl-send-btn" style="text-decoration:none;opacity:0.8">⭐ Upgrade to Pro</a>`;
+    }
+    // Hide SMTP banner for Starter
+    const banner = document.getElementById('smtp-banner-slot');
+    if (banner) banner.innerHTML = '';
   }
 
   document.getElementById('template-modal').hidden = false;
@@ -2707,11 +2772,20 @@ async function sendBulkEmails() {
       })
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.detail || 'Error');
+    if (!resp.ok) {
+      const errBody = typeof data.detail === 'object' ? data.detail : {error: data.detail};
+      if (errBody.error === 'connect_email_first') {
+        alert('Connect your email account first.\n\nClick "Connect Email" in the Send panel.');
+        refreshSmtpBanner();
+        return;
+      }
+      throw new Error(errBody.hint || errBody.error || 'Error');
+    }
 
+    const capNote = data.daily_cap ? ` (daily cap: ${data.daily_cap})` : '';
     const msg = dryRun
       ? `✅ Dry run OK — ${data.sent} emails θα στέλνονταν`
-      : `✅ Εστάλησαν ${data.sent} emails! (${data.failed} failed)`;
+      : `✅ Εστάλησαν ${data.sent} emails!${capNote} (${data.failed} failed)`;
     alert(msg);
 
     if (!dryRun && data.sent > 0) {
@@ -2744,34 +2818,84 @@ async function sendBulkEmails() {
 }
 
 // ── SMTP Settings ──────────────────────────────────────────────────────────────
+// ── SMTP — per-customer (Pro only) ────────────────────────────────────────────
+// Each Pro license key stores its own SMTP credentials server-side (encrypted).
+// The modal opens pre-filled when a config exists.
+
+let _smtpConfigured = false;  // updated by refreshSmtpBanner()
+
+async function refreshSmtpBanner() {
+  if (!isProTier()) return;
+  try {
+    const cfg = await fetch('/api/smtp/config').then(r => r.json());
+    _smtpConfigured = cfg.configured;
+    const slot = document.getElementById('smtp-banner-slot');
+    if (!slot) return;
+    if (cfg.configured) {
+      slot.innerHTML = `
+        <div class="smtp-connected">
+          <span class="smtp-ok">✓</span>
+          <span>Sending from <strong>${cfg.user}</strong></span>
+          <button class="smtp-disconnect-btn" onclick="disconnectSmtp()">Disconnect</button>
+          <button class="modal-btn modal-btn-cancel" style="font-size:11px;padding:4px 10px;margin-left:4px" onclick="openSmtpModal()">Change</button>
+        </div>`;
+    } else {
+      slot.innerHTML = `
+        <div class="smtp-panel">
+          <h3>📬 Connect your email account</h3>
+          <p>Pro bulk outreach sends from <em>your</em> Gmail (or any SMTP). Replies land in your inbox, not ours. Gmail App Password recommended.</p>
+          <button class="modal-btn modal-btn-save" style="width:100%" onclick="openSmtpModal()">Connect Email →</button>
+        </div>`;
+    }
+  } catch(e) {}
+}
+
 async function openSmtpModal() {
   try {
-    const s = await fetch('/api/settings/smtp').then(r => r.json());
-    document.getElementById('smtp-host').value = s.host || 'smtp.gmail.com';
-    document.getElementById('smtp-port').value = s.port || 587;
-    document.getElementById('smtp-user').value = s.user || '';
-    document.getElementById('smtp-pass').value = s.password || '';
-    document.getElementById('smtp-name').value = s.from_name || 'CreatorScan Outreach';
+    const cfg = await fetch('/api/smtp/config').then(r => r.json());
+    if (cfg.configured) {
+      document.getElementById('smtp-host').value = cfg.host || 'smtp.gmail.com';
+      document.getElementById('smtp-port').value = cfg.port || 587;
+      document.getElementById('smtp-user').value = cfg.user || '';
+      document.getElementById('smtp-pass').value = '';  // never pre-fill password
+      document.getElementById('smtp-name').value = cfg.display_name || '';
+    }
   } catch(e) {}
   document.getElementById('smtp-modal').hidden = false;
 }
-function closeSmtpModal() { document.getElementById('smtp-modal').hidden = true; }
+function closeSmtpModal() {
+  document.getElementById('smtp-modal').hidden = true;
+  refreshSmtpBanner();
+}
 
 async function saveSmtp() {
   const data = {
-    host:      document.getElementById('smtp-host').value,
-    port:      parseInt(document.getElementById('smtp-port').value),
-    user:      document.getElementById('smtp-user').value,
-    password:  document.getElementById('smtp-pass').value,
-    from_name: document.getElementById('smtp-name').value,
+    host:         document.getElementById('smtp-host').value.trim(),
+    port:         parseInt(document.getElementById('smtp-port').value) || 587,
+    user:         document.getElementById('smtp-user').value.trim(),
+    password:     document.getElementById('smtp-pass').value,
+    display_name: document.getElementById('smtp-name').value.trim(),
   };
-  await fetch('/api/settings/smtp', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
   const msg = document.getElementById('smtp-msg');
-  msg.textContent = '✓ Αποθηκεύτηκε!'; msg.style.color = 'var(--green)';
-  setTimeout(() => { msg.textContent = ''; closeSmtpModal(); }, 1200);
+  if (!data.user || !data.password) {
+    msg.textContent = 'Email and password are required'; msg.style.color = '#dc2626';
+    return false;
+  }
+  msg.textContent = 'Connecting…'; msg.style.color = 'var(--text3)';
+  try {
+    const r = await fetch('/api/smtp/config', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data),
+    });
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.detail || 'Failed');
+    msg.textContent = '✓ Connected!'; msg.style.color = '#059669';
+    setTimeout(() => { msg.textContent = ''; closeSmtpModal(); }, 1200);
+    return true;
+  } catch(e) {
+    msg.textContent = '✗ ' + e.message; msg.style.color = '#dc2626';
+    return false;
+  }
 }
 
 async function testSmtp() {
@@ -2779,13 +2903,25 @@ async function testSmtp() {
   const msg = document.getElementById('smtp-msg');
   btn.textContent = 'Testing…'; btn.disabled = true;
   try {
-    await saveSmtp();
-    const r = await fetch('/api/settings/smtp/test', {method:'POST'}).then(r => r.json());
-    msg.textContent = r.msg || '✓ OK!'; msg.style.color = 'var(--green)';
+    // Save first if password is filled, then test
+    if (document.getElementById('smtp-pass').value) {
+      const saved = await saveSmtp();
+      if (!saved) { btn.textContent = 'Test Connection'; btn.disabled = false; return; }
+    }
+    const r = await fetch('/api/smtp/test', {method:'POST'});
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.detail || 'Failed');
+    msg.textContent = res.msg || '✓ Test email sent!'; msg.style.color = '#059669';
   } catch(e) {
     msg.textContent = '✗ ' + (e.message || 'Failed'); msg.style.color = '#dc2626';
   }
   btn.textContent = 'Test Connection'; btn.disabled = false;
+}
+
+async function disconnectSmtp() {
+  if (!confirm('Remove your email connection? Bulk send will stop working until you reconnect.')) return;
+  await fetch('/api/smtp/config', {method: 'DELETE'});
+  refreshSmtpBanner();
 }
 
 // ── Detail Drawer ──────────────────────────────────────────────────────────────

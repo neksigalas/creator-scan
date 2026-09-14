@@ -400,6 +400,91 @@ def list_join_requests(status: str = "pending") -> list[dict]:
     return result.data or []
 
 
+# ── Per-customer SMTP ─────────────────────────────────────────────────────────
+
+def _smtp_encrypt(plaintext: str) -> str:
+    """Encrypt SMTP password with Fernet. Requires SMTP_ENCRYPTION_KEY env var.
+    Falls back to plaintext in local dev (no key set)."""
+    import os
+    from cryptography.fernet import Fernet
+    key = os.getenv("SMTP_ENCRYPTION_KEY", "")
+    if not key:
+        return plaintext  # local dev — no encryption
+    return Fernet(key.encode()).encrypt(plaintext.encode()).decode()
+
+
+def _smtp_decrypt(ciphertext: str) -> str:
+    import os
+    from cryptography.fernet import Fernet
+    key = os.getenv("SMTP_ENCRYPTION_KEY", "")
+    if not key:
+        return ciphertext
+    try:
+        return Fernet(key.encode()).decrypt(ciphertext.encode()).decode()
+    except Exception:
+        return ""  # bad key / corrupted — treat as empty
+
+
+def get_smtp_config(license_key: str) -> dict | None:
+    """Return decrypted SMTP config for this license, or None if not set."""
+    result = (get_client().table("cs_license_smtp")
+              .select("smtp_host,smtp_port,smtp_user,smtp_pass_enc,display_name,daily_cap")
+              .eq("license_key", license_key).limit(1).execute())
+    row = (result.data or [None])[0]
+    if not row:
+        return None
+    return {
+        "host":         row["smtp_host"],
+        "port":         row["smtp_port"],
+        "user":         row["smtp_user"],
+        "password":     _smtp_decrypt(row["smtp_pass_enc"]),
+        "display_name": row.get("display_name") or "",
+        "daily_cap":    row.get("daily_cap", 50),
+    }
+
+
+def save_smtp_config(license_key: str, host: str, port: int, user: str,
+                     password: str, display_name: str = "", daily_cap: int = 50) -> None:
+    """Upsert SMTP config for a license. Password is encrypted before storage."""
+    from datetime import datetime as _dt
+    get_client().table("cs_license_smtp").upsert({
+        "license_key":   license_key,
+        "smtp_host":     host,
+        "smtp_port":     int(port),
+        "smtp_user":     user,
+        "smtp_pass_enc": _smtp_encrypt(password),
+        "display_name":  display_name or "",
+        "daily_cap":     int(daily_cap),
+        "updated_at":    _dt.utcnow().isoformat(),
+    }, on_conflict="license_key").execute()
+
+
+def delete_smtp_config(license_key: str) -> None:
+    get_client().table("cs_license_smtp").delete().eq("license_key", license_key).execute()
+
+
+def smtp_daily_sent(license_key: str) -> int:
+    """How many real (non-dry-run) emails this license sent today."""
+    from datetime import date
+    today = date.today().isoformat()
+    result = (get_client().table("cs_email_send_log")
+              .select("recipient_count")
+              .eq("license_key", license_key)
+              .eq("dry_run", False)
+              .gte("sent_at", today)
+              .execute())
+    return sum(r["recipient_count"] for r in (result.data or []))
+
+
+def log_smtp_send(license_key: str, recipient_count: int, dry_run: bool) -> None:
+    """Record a bulk send event for audit and daily cap."""
+    get_client().table("cs_email_send_log").insert({
+        "license_key":     license_key,
+        "recipient_count": recipient_count,
+        "dry_run":         dry_run,
+    }).execute()
+
+
 # ── API Keys ──────────────────────────────────────────────────────────────────
 
 TIER_LIMITS = {"free": 100, "pro": 5000, "unlimited": 999_999}

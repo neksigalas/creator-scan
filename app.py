@@ -80,7 +80,7 @@ _TIER_RANK = {"starter": 0, "pro": 1, "agency": 2}
 # Starter monthly CSV row cap (unlimited = -1)
 _STARTER_CSV_CAP = 500
 # Routes that require Pro or above (exact prefix match)
-_PRO_PREFIXES = ("/api/ai/write-email", "/api/outreach/send-bulk")
+_PRO_PREFIXES = ("/api/ai/write-email", "/api/outreach/send-bulk", "/api/smtp/")
 
 def _license_info(key: str) -> dict | None:
     """Return the validated license row (cached) or None."""
@@ -576,49 +576,86 @@ async def api_join_requests(status: str = "pending"):
 
 
 # ── SMTP Settings (stored in memory, persisted via .env or runtime) ──────────
-_smtp_settings: dict = {
-    "host":     os.getenv("SMTP_HOST",  "smtp.gmail.com"),
-    "port":     int(os.getenv("SMTP_PORT", "587")),
-    "user":     os.getenv("SMTP_USER",  ""),
-    "password": os.getenv("SMTP_PASS",  ""),
-    "from_name": os.getenv("SMTP_FROM_NAME", "CreatorScan Outreach"),
-}
+# ── Per-customer SMTP routes (/api/smtp/*) — Pro tier only ───────────────────
+# These read the license key from X-License to scope config per customer.
+# Operator SMTP settings (env vars) still exist as admin fallback for dry-runs
+# but are NEVER used for customer-originated outreach.
+
+@app.get("/api/smtp/config")
+async def api_smtp_get(request: Request):
+    """Return whether this license has SMTP configured (password never returned)."""
+    lic_key = request.headers.get("X-License", "")
+    cfg = db.get_smtp_config(lic_key)
+    if not cfg:
+        return {"configured": False}
+    return {
+        "configured":   True,
+        "host":         cfg["host"],
+        "port":         cfg["port"],
+        "user":         cfg["user"],
+        "display_name": cfg["display_name"],
+        "daily_cap":    cfg["daily_cap"],
+    }
 
 
-@app.get("/api/settings/smtp")
-async def api_get_smtp():
-    """Returns SMTP settings (password masked)."""
-    s = dict(_smtp_settings)
-    s["password"] = "••••••••" if s["password"] else ""
-    return s
+@app.post("/api/smtp/config")
+async def api_smtp_save(request: Request, body: dict = Body(...)):
+    """Save (or update) SMTP credentials for this license key."""
+    lic_key = request.headers.get("X-License", "")
+    host    = str(body.get("host", "smtp.gmail.com")).strip()
+    port    = int(body.get("port", 587))
+    user    = str(body.get("user", "")).strip()
+    pw      = str(body.get("password", "")).strip()
+    name    = str(body.get("display_name", "")).strip()
+
+    if not user or not pw:
+        raise HTTPException(400, "user and password are required")
+    if not host:
+        raise HTTPException(400, "host is required")
+
+    # Quick smoke-test: try to connect before saving
+    try:
+        with smtplib.SMTP(host, port, timeout=10) as srv:
+            srv.starttls()
+            srv.login(user, pw)
+    except Exception as e:
+        raise HTTPException(400, f"SMTP connection failed: {e}")
+
+    db.save_smtp_config(lic_key, host, port, user, pw, name)
+    return {"ok": True, "user": user}
 
 
-@app.post("/api/settings/smtp")
-async def api_set_smtp(body: dict = Body(...)):
-    """Update SMTP settings at runtime."""
-    for k in ("host", "port", "user", "password", "from_name"):
-        if k in body and body[k] != "••••••••":
-            _smtp_settings[k] = body[k]
+@app.delete("/api/smtp/config")
+async def api_smtp_delete(request: Request):
+    """Remove this license's SMTP config."""
+    lic_key = request.headers.get("X-License", "")
+    db.delete_smtp_config(lic_key)
     return {"ok": True}
 
 
-@app.post("/api/settings/smtp/test")
-async def api_test_smtp():
-    """Send a test email to the configured SMTP user."""
-    s = _smtp_settings
-    if not s["user"] or not s["password"]:
-        raise HTTPException(400, "SMTP not configured")
+@app.post("/api/smtp/test")
+async def api_smtp_test(request: Request):
+    """Send a test email to the configured user's address."""
+    lic_key = request.headers.get("X-License", "")
+    cfg = db.get_smtp_config(lic_key)
+    if not cfg:
+        raise HTTPException(400, "No SMTP configured — save your settings first")
     try:
         msg = MIMEMultipart()
-        msg["From"]    = f"{s['from_name']} <{s['user']}>"
-        msg["To"]      = s["user"]
+        sender_name = cfg["display_name"] or cfg["user"]
+        msg["From"]    = f"{sender_name} <{cfg['user']}>"
+        msg["To"]      = cfg["user"]
         msg["Subject"] = "✅ CreatorScan SMTP Test"
-        msg.attach(MIMEText("<h2>SMTP works!</h2><p>CreatorScan outreach is configured correctly.</p>", "html"))
-        with smtplib.SMTP(s["host"], int(s["port"]), timeout=15) as srv:
+        msg.attach(MIMEText(
+            "<h2>SMTP works!</h2>"
+            "<p>Your email account is connected to CreatorScan. Outreach emails will be sent from this address.</p>",
+            "html",
+        ))
+        with smtplib.SMTP(cfg["host"], cfg["port"], timeout=15) as srv:
             srv.starttls()
-            srv.login(s["user"], s["password"])
-            srv.sendmail(s["user"], s["user"], msg.as_string())
-        return {"ok": True, "msg": f"Test email sent to {s['user']}"}
+            srv.login(cfg["user"], cfg["password"])
+            srv.sendmail(cfg["user"], cfg["user"], msg.as_string())
+        return {"ok": True, "msg": f"Test email sent to {cfg['user']}"}
     except Exception as e:
         raise HTTPException(400, str(e))
 
@@ -648,15 +685,33 @@ def _render_template(template: str, creator: dict) -> str:
     return result
 
 
+_UNSUB_FOOTER = """
+<br><br>
+<hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+<p style="font-size:11px;color:#999;text-align:center">
+  You received this email because a brand found your creator profile on
+  <a href="https://creatorscan.io" style="color:#999">CreatorScan</a>.
+  To remove yourself from the directory, visit
+  <a href="https://creatorscan.io/remove" style="color:#999">creatorscan.io/remove</a>.
+</p>
+"""
+
+_DAILY_CAP_DEFAULT = 50  # fallback if not stored per-license
+
+
 @app.post("/api/outreach/send-bulk")
-async def api_send_bulk(body: dict = Body(...)):
+async def api_send_bulk(request: Request, body: dict = Body(...)):
     """
-    Send bulk outreach emails to a list of creators.
+    Send bulk outreach emails to a list of creators using the customer's own SMTP.
     Body: {creator_ids: [int], subject: str, body_html: str, dry_run: bool}
     """
-    s = _smtp_settings
-    if not s["user"] or not s["password"]:
-        raise HTTPException(400, "SMTP not configured — go to Settings first")
+    lic_key = request.headers.get("X-License", "")
+    cfg = db.get_smtp_config(lic_key)
+    if not cfg:
+        raise HTTPException(400, detail={
+            "error": "connect_email_first",
+            "hint": "Connect your email account in Settings before sending outreach",
+        })
 
     creator_ids: list[int] = body.get("creator_ids", [])
     subject_tpl: str       = body.get("subject", "")
@@ -670,15 +725,26 @@ async def api_send_bulk(body: dict = Body(...)):
     if len(creator_ids) > 100:
         raise HTTPException(400, "Max 100 emails per batch")
 
+    # Daily cap check
+    daily_cap = cfg.get("daily_cap", _DAILY_CAP_DEFAULT)
+    if not dry_run:
+        already_sent = db.smtp_daily_sent(lic_key)
+        remaining = daily_cap - already_sent
+        if remaining <= 0:
+            raise HTTPException(429, f"Daily limit of {daily_cap} emails reached. Resets at midnight UTC.")
+        if len(creator_ids) > remaining:
+            creator_ids = creator_ids[:remaining]  # trim to cap
+
     results = []
     sent = 0
     failed = 0
+    sender_name = cfg.get("display_name") or cfg["user"]
 
     try:
-        smtp_conn = None if dry_run else smtplib.SMTP(s["host"], int(s["port"]), timeout=20)
+        smtp_conn = None if dry_run else smtplib.SMTP(cfg["host"], cfg["port"], timeout=20)
         if smtp_conn:
             smtp_conn.starttls()
-            smtp_conn.login(s["user"], s["password"])
+            smtp_conn.login(cfg["user"], cfg["password"])
 
         for cid in creator_ids:
             creator = db.get_creator_by_id(cid)
@@ -692,7 +758,7 @@ async def api_send_bulk(body: dict = Body(...)):
                 continue
 
             rendered_subject = _render_template(subject_tpl, creator)
-            rendered_body    = _render_template(body_tpl, creator)
+            rendered_body    = _render_template(body_tpl, creator) + _UNSUB_FOOTER
 
             if dry_run:
                 results.append({"id": cid, "status": "dry_run", "to": email,
@@ -702,12 +768,11 @@ async def api_send_bulk(body: dict = Body(...)):
 
             try:
                 msg = MIMEMultipart("alternative")
-                msg["From"]    = f"{s['from_name']} <{s['user']}>"
+                msg["From"]    = f"{sender_name} <{cfg['user']}>"
                 msg["To"]      = email
                 msg["Subject"] = rendered_subject
                 msg.attach(MIMEText(rendered_body, "html"))
-                smtp_conn.sendmail(s["user"], email, msg.as_string())
-                # Mark as contacted in outreach
+                smtp_conn.sendmail(cfg["user"], email, msg.as_string())
                 db.upsert_outreach(cid, status="contacted")
                 results.append({"id": cid, "status": "sent", "to": email, "name": creator.get("display_name")})
                 sent += 1
@@ -717,12 +782,19 @@ async def api_send_bulk(body: dict = Body(...)):
 
         if smtp_conn:
             smtp_conn.quit()
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"SMTP connection failed: {e}")
 
+    # Log real sends for daily cap
+    if not dry_run and sent:
+        db.log_smtp_send(lic_key, sent, dry_run=False)
+
     return {
         "sent": sent, "failed": failed, "dry_run": dry_run,
-        "results": results
+        "daily_cap": daily_cap,
+        "results": results,
     }
 
 

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remove my profile · CreatorScan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Public+Sans:wght@400;600&display=swap">
+<style>
+  :root { --ground:#F2F5F3; --surface:#FFFFFF; --ink:#111A17; --ink-2:#4B5752; --rule:#D8DFDB; --teal:#0E6B5C; --bad:#B42318; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ground:#0E1412; --surface:#151D1A; --ink:#E8EEEB; --ink-2:#A9B5B0; --rule:#26322E; --teal:#3FB39E; --bad:#F97066; } }
+  :root[data-theme="dark"] { --ground:#0E1412; --surface:#151D1A; --ink:#E8EEEB; --ink-2:#A9B5B0; --rule:#26322E; --teal:#3FB39E; --bad:#F97066; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--ground); color: var(--ink); font: 400 17px/1.6 'Public Sans', 'Segoe UI', system-ui, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 40px 24px 80px; }
+  a { color: var(--teal); }
+  .logo { font: 800 20px/1 'Bricolage Grotesque', system-ui, sans-serif; color: var(--ink); text-decoration: none; }
+  .logo span { color: var(--teal); }
+  h1 { font: 800 38px/1.1 'Bricolage Grotesque', system-ui, sans-serif; letter-spacing: -0.03em; margin: 36px 0 12px; }
+  p { color: var(--ink-2); }
+  form { margin-top: 28px; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 24px; display: grid; gap: 18px; }
+  label { display: grid; gap: 6px; font-weight: 600; font-size: 15px; }
+  label span { font-weight: 400; color: var(--ink-2); font-size: 14px; }
+  input, textarea { font: inherit; padding: 11px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--ground); color: var(--ink); }
+  input:focus, textarea:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+  button { font: 600 16px 'Public Sans', system-ui, sans-serif; padding: 13px 18px; border: 0; border-radius: 10px; background: var(--teal); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  .msg { font-size: 15px; } .msg.err { color: var(--bad); }
+  .done { margin-top: 28px; padding: 24px; border: 1px solid var(--teal); border-radius: 14px; background: var(--surface); }
+</style>
+</head>
+<body>
+<main>
+  <a class="logo" href="/">Creator<span>Scan</span></a>
+  <h1>Remove my profile</h1>
+  <p>If you are a creator listed in CreatorScan and want your profile removed, tell us which one. We confirm the request by email and remove it. See the <a href="/privacy">privacy notice</a> for what we hold and why.</p>
+
+  <form id="f" novalidate>
+    <label>Link to your channel or profile
+      <input name="profile_url" type="url" required placeholder="https://www.youtube.com/@yourchannel">
+    </label>
+    <label>Your email
+      <span>So we can confirm the request comes from you.</span>
+      <input name="email" type="email" required placeholder="you@example.com">
+    </label>
+    <label>Anything else? <span>Optional</span>
+      <textarea name="reason" rows="3"></textarea>
+    </label>
+    <button type="submit">Send removal request</button>
+    <p class="msg" id="msg" role="status"></p>
+  </form>
+  <div class="done" id="done" hidden>
+    <strong>Request received.</strong>
+    <p>We will email you to confirm, then remove the profile. You can also write to <a href="mailto:digitaldrophq@gmail.com">digitaldrophq@gmail.com</a>.</p>
+  </div>
+</main>
+<script>
+  const f = document.getElementById('f'), msg = document.getElementById('msg')
+  f.addEventListener('submit', async e => {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(f))
+    if (!data.profile_url.includes('.')) { msg.className = 'msg err'; msg.textContent = 'Please paste the link to your channel or profile.'; return }
+    if (!data.email.includes('@')) { msg.className = 'msg err'; msg.textContent = 'Please enter an email address we can reply to.'; return }
+    const b = f.querySelector('button'); b.disabled = true; msg.className = 'msg'; msg.textContent = 'Sending…'
+    try {
+      const r = await fetch('/api/remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.detail || 'Something went wrong.')
+      f.hidden = true; document.getElementById('done').hidden = false
+    } catch (err) {
+      msg.className = 'msg err'; msg.textContent = err.message + ' You can also email digitaldrophq@gmail.com.'
+      b.disabled = false
+    }
+  })
+</script>
+</body>
+</html>
