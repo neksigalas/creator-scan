@@ -1,6 +1,6 @@
 """
-CreatorScan — FastAPI Web Server (Φάση 2 + 3)
-Τρέξε με: python app.py
+CreatorScan — FastAPI Web Server (Phase 2 + 3)
+Run with: python app.py
 Dashboard:  http://localhost:8000
 API docs:   http://localhost:8000/docs
 API keys:   http://localhost:8000/api-keys
@@ -36,6 +36,13 @@ from processors.niche import NICHE_KEYWORDS
 
 db.init_db()
 
+# Sales / landing page router (owns GET "/" and webhook routes)
+try:
+    from sales import router as sales_router
+    _sales_loaded = True
+except ImportError:
+    _sales_loaded = False
+
 app = FastAPI(title="CreatorScan API", version="2.0")
 
 # ── Access gate ───────────────────────────────────────────────────────────────
@@ -54,7 +61,10 @@ ACCESS_PASSWORD = os.getenv("ACCESS_PASSWORD", "")
 ON_VERCEL       = bool(os.getenv("VERCEL"))
 
 # Paths that never require auth
-_PUBLIC_PATHS = {"/", "/join", "/api/auth/verify", "/api/join"}
+_PUBLIC_PATHS = {
+    "/", "/app", "/join", "/pricing", "/privacy", "/remove",
+    "/api/auth/verify", "/api/join", "/api/remove", "/api/webhooks/whop",
+}
 # Paths only the operator (HTTP Basic) may use — never a customer license
 _ADMIN_PREFIXES = ("/api/admin", "/api/keys", "/api-keys", "/api/settings", "/api/scan", "/docs", "/openapi.json")
 
@@ -187,7 +197,7 @@ def _run_scan(platform: str, niche: str, min_f: int, max_f: int):
                                 f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
                             )
             else:
-                scan_state["log"].append("⚠ YouTube API key δεν έχει οριστεί")
+                scan_state["log"].append("⚠ YouTube API key not configured")
 
         if platform in ("twitch", "all"):
             from collectors.twitch import TwitchCollector
@@ -206,7 +216,7 @@ def _run_scan(platform: str, niche: str, min_f: int, max_f: int):
                                 f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
                             )
             else:
-                scan_state["log"].append("⚠ Twitch credentials δεν έχουν οριστεί")
+                scan_state["log"].append("⚠ Twitch credentials not configured")
 
         if platform in ("tiktok", "all"):
             try:
@@ -223,7 +233,7 @@ def _run_scan(platform: str, niche: str, min_f: int, max_f: int):
                                 f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
                             )
             except ImportError:
-                scan_state["log"].append("⚠ Playwright δεν είναι installed (pip install playwright && playwright install chromium)")
+                scan_state["log"].append("⚠ Playwright not installed (pip install playwright && playwright install chromium)")
 
         if platform in ("instagram", "all"):
             try:
@@ -240,18 +250,18 @@ def _run_scan(platform: str, niche: str, min_f: int, max_f: int):
                                 f"  ✅ {creator['display_name']} ({creator['followers']:,} followers)"
                             )
             except ImportError:
-                scan_state["log"].append("⚠ Playwright δεν είναι installed (pip install playwright && playwright install chromium)")
+                scan_state["log"].append("⚠ Playwright not installed (pip install playwright && playwright install chromium)")
 
     except Exception as e:
         scan_state["log"].append(f"❌ Error: {e}")
     finally:
         scan_state["running"] = False
-        scan_state["log"].append("🏁 Scan ολοκληρώθηκε!")
+        scan_state["log"].append("🏁 Scan complete!")
 
 
 # ── API Routes ────────────────────────────────────────────────────────────────
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/app", response_class=HTMLResponse)
 async def dashboard():
     """Serve the dashboard HTML."""
     html_path = STATIC_DIR / "index.html"
@@ -321,7 +331,7 @@ async def api_creators(
 
 @app.get("/api/creators/{creator_id}")
 async def api_creator_detail(creator_id: int):
-    """Single creator detail — για το detail drawer."""
+    """Single creator detail — for the detail drawer."""
     c = db.get_creator_by_id(creator_id)
     if not c:
         raise HTTPException(status_code=404, detail="Creator not found")
@@ -348,7 +358,7 @@ async def api_export_csv(
         has_email=has_email, limit=row_limit,
     )
     if not creators:
-        return JSONResponse({"error": "Δεν βρέθηκαν creators"}, status_code=404)
+        return JSONResponse({"error": "No creators found"}, status_code=404)
 
     output = io.StringIO()
     fieldnames = ["platform", "display_name", "username", "followers", "niche",
@@ -808,20 +818,20 @@ async def require_api_key(
     x_api_key: Optional[str] = Header(default=None),
     api_key:   Optional[str] = Query(default=None),
 ) -> dict:
-    """FastAPI dependency — validates API key και checks rate limit."""
+    """FastAPI dependency — validates API key and checks rate limit."""
     key = x_api_key or api_key
     if not key:
         raise HTTPException(
             status_code=401,
             detail={
-                "error":   "API key απαιτείται",
-                "hint":    "Πρόσθεσε X-API-Key header ή ?api_key= query param",
-                "get_key": "POST /api/keys  (από το dashboard)"
+                "error":   "API key required",
+                "hint":    "Add X-API-Key header or ?api_key= query param",
+                "get_key": "POST /api/keys  (from the dashboard)"
             }
         )
     allowed, info = db.check_and_increment(key)
     if info is None:
-        raise HTTPException(status_code=401, detail={"error": "Άκυρο API key"})
+        raise HTTPException(status_code=401, detail={"error": "Invalid API key"})
     if not allowed:
         raise HTTPException(
             status_code=429,
@@ -830,7 +840,7 @@ async def require_api_key(
                 "limit":       info["limit_per_day"],
                 "calls_today": info["calls_today"],
                 "tier":        info["tier"],
-                "upgrade":     "Επικοινώνησε για Pro tier (5,000 calls/day)"
+                "upgrade":     "Contact us to upgrade to Pro tier (5,000 calls/day)"
             }
         )
     return info
@@ -920,12 +930,12 @@ async def v1_niches(key_info: dict = Depends(require_api_key)):
 # ── API Key Management (internal — no auth needed, local only) ────────────────
 @app.post("/api/keys", summary="Create API key", tags=["keys"])
 async def api_create_key(
-    name: str = Query(..., description="Όνομα για το key"),
+    name: str = Query(..., description="Name for the key"),
     tier: str = Query("free", description="free | pro | unlimited"),
 ):
-    """Δημιουργεί νέο API key. Free: 100 calls/day, Pro: 5000."""
+    """Create new API key. Free: 100 calls/day, Pro: 5000."""
     if tier not in ("free", "pro", "unlimited"):
-        raise HTTPException(400, "tier πρέπει να είναι: free, pro, unlimited")
+        raise HTTPException(400, "tier must be: free, pro, unlimited")
     key_info = db.create_api_key(name=name, tier=tier)
     return {"success": True, "key": key_info}
 
@@ -945,15 +955,15 @@ async def api_list_keys():
 async def api_revoke_key(key: str):
     ok = db.revoke_api_key(key)
     if not ok:
-        raise HTTPException(404, "Key δεν βρέθηκε")
-    return {"success": True, "message": "Key ανακλήθηκε"}
+        raise HTTPException(404, "Key not found")
+    return {"success": True, "message": "Key revoked"}
 
 
 @app.get("/api/keys/{key}/usage", summary="Key usage stats", tags=["keys"])
 async def api_key_usage(key: str):
     info = db.get_api_key(key)
     if not info:
-        raise HTTPException(404, "Key δεν βρέθηκε")
+        raise HTTPException(404, "Key not found")
     usage = db.get_key_usage(key, days=7)
     return {"key_info": info, "usage_last_7_days": usage}
 
@@ -962,7 +972,7 @@ async def api_key_usage(key: str):
 
 @app.get("/api/outreach")
 async def api_outreach_all():
-    """Επιστρέφει όλα τα outreach records."""
+    """Returns all outreach records."""
     data = db.get_outreach_all()
     return {"outreach": data}
 
@@ -973,10 +983,10 @@ async def api_outreach_update(
     status: Optional[str] = Body(default=None, embed=True),
     notes:  Optional[str] = Body(default=None, embed=True),
 ):
-    """Update outreach status/notes για creator."""
+    """Update outreach status/notes for a creator."""
     VALID = {"new", "contacted", "replied", "interested", "passed"}
     if status and status not in VALID:
-        raise HTTPException(400, f"status πρέπει να είναι: {', '.join(VALID)}")
+        raise HTTPException(400, f"status must be one of: {', '.join(VALID)}")
     result = db.upsert_outreach(creator_id, status=status, notes=notes)
     return {"success": True, "outreach": result}
 
@@ -1025,6 +1035,10 @@ async def api_keys_page():
     keys_page = STATIC_DIR / "api-keys.html"
     return HTMLResponse(content=keys_page.read_text(encoding="utf-8"))
 
+
+# ── Sales / landing router ────────────────────────────────────────────────────
+if _sales_loaded:
+    app.include_router(sales_router)
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":

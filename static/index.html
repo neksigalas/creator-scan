@@ -1427,12 +1427,12 @@ input, select { font-family: inherit; }
     <span class="search-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </span>
-    <input type="text" id="search-input" placeholder="Αναζήτηση creator — όνομα, username, bio…" oninput="debounceSearch()">
+    <input type="text" id="search-input" placeholder="Search creators — name, username, bio…" oninput="debounceSearch()">
   </div>
 
   <div class="topbar-right">
     <div class="tstat"><b id="total-count">…</b> creators</div>
-    <div class="tstat"><b id="email-count">…</b> με email</div>
+    <div class="tstat"><b id="email-count">…</b> with email</div>
     <button class="card-btn" onclick="openSmtpModal()" title="Email Settings" style="padding:7px 10px;border-radius:var(--r-sm)">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.99 6.99 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.49.49 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
     </button>
@@ -1452,7 +1452,7 @@ input, select { font-family: inherit; }
           <div class="ptab-icon" style="background:var(--surface2)">
             <svg viewBox="0 0 24 24" fill="var(--text2)"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
           </div>
-          Όλες τις πλατφόρμες
+          All Platforms
           <span class="ptab-count" id="pc-all">…</span>
         </button>
         <button class="ptab" data-val="youtube">
@@ -1490,7 +1490,7 @@ input, select { font-family: inherit; }
     <div class="sidebar-section">
       <div class="section-heading">Niche</div>
       <div class="niche-pills" id="niche-pills">
-        <button class="npill active" data-val="">Όλες</button>
+        <button class="npill active" data-val="">All</button>
       </div>
     </div>
 
@@ -1499,12 +1499,12 @@ input, select { font-family: inherit; }
       <div class="section-heading">Followers</div>
       <div class="followers-row">
         <div class="fol-input-wrap">
-          <label>Ελάχιστο</label>
+          <label>Min</label>
           <input type="number" id="min-followers" value="2000" min="0" step="500">
         </div>
         <span class="fol-sep">–</span>
         <div class="fol-input-wrap">
-          <label>Μέγιστο</label>
+          <label>Max</label>
           <input type="number" id="max-followers" value="100000" min="0" step="1000">
         </div>
       </div>
@@ -1517,7 +1517,7 @@ input, select { font-family: inherit; }
 
     <!-- Language -->
     <div class="sidebar-section">
-      <div class="section-heading">Γλώσσα</div>
+      <div class="section-heading">Language</div>
       <input class="filter-input" type="text" id="language" placeholder="el, en, es, fr…" maxlength="5">
     </div>
 
@@ -1525,7 +1525,7 @@ input, select { font-family: inherit; }
     <div class="sidebar-section">
       <div class="section-heading">Engagement Rate</div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button class="preset-btn er-preset-btn" data-er="" onclick="setErFilter(this,'')">Όλα</button>
+        <button class="preset-btn er-preset-btn" data-er="" onclick="setErFilter(this,'')">All</button>
         <button class="preset-btn er-preset-btn" data-er="2" onclick="setErFilter(this,'2')">🟢 >2%</button>
         <button class="preset-btn er-preset-btn" data-er="5" onclick="setErFilter(this,'5')">🟢 >5%</button>
         <button class="preset-btn er-preset-btn" data-er="10" onclick="setErFilter(this,'10')">🔥 >10%</button>
@@ -1536,7 +1536,7 @@ input, select { font-family: inherit; }
     <!-- Email toggle -->
     <div class="sidebar-section">
       <label class="toggle-label" onclick="toggleEmailClick()">
-        <span class="tog-text">Μόνο με email</span>
+        <span class="tog-text">Has Email Only</span>
         <div class="toggle-switch">
           <input type="checkbox" id="email-toggle" onclick="event.stopPropagation()">
           <div class="tog-track"></div>
@@ -1549,49 +1549,49 @@ input, select { font-family: inherit; }
     <div class="sidebar-actions">
       <button class="btn-apply" onclick="applyFilters()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
-        Εφαρμογή Φίλτρων
+        Apply Filters
       </button>
       <button class="btn-export" onclick="exportCSV()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-        Εξαγωγή CSV
+        Export CSV
       </button>
     </div>
 
     <!-- Saved Lists -->
     <div class="sidebar-section">
-      <div class="section-heading">Αποθηκευμένες Λίστες</div>
+      <div class="section-heading">Saved Lists</div>
       <div class="lists-container" id="lists-container">
         <div class="list-item active" data-list-id="" onclick="selectList(this, '')">
           <span class="list-dot" style="background:#94a3b8"></span>
-          Όλοι οι Creators
+          All Creators
           <span class="list-count" id="lc-all">…</span>
         </div>
       </div>
       <button class="btn-new-list" onclick="promptNewList()">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        Νέα Λίστα
+        New List
       </button>
     </div>
 
     <!-- Scan panel -->
     <div class="sidebar-section">
-      <div class="section-heading">Νέο Scan</div>
+      <div class="section-heading">New Scan</div>
       <div class="scan-options">
         <select id="scan-platform" class="scan-select">
           <option value="youtube">YouTube</option>
           <option value="twitch">Twitch</option>
           <option value="tiktok">TikTok</option>
           <option value="instagram">Instagram</option>
-          <option value="all">Όλες</option>
+          <option value="all">All</option>
         </select>
         <select id="scan-niche" class="scan-select">
           <option value="Gaming">Gaming</option>
         </select>
       </div>
-      <div class="scan-log" id="scan-log">Εδώ εμφανίζεται η πρόοδος…</div>
+      <div class="scan-log" id="scan-log">Progress will appear here…</div>
       <button class="btn-scan" id="scan-btn" onclick="startScan()">
         <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Εκκίνηση Scan
+        Start Scan
       </button>
     </div>
 
@@ -1608,7 +1608,7 @@ input, select { font-family: inherit; }
         </div>
         <div>
           <div class="pstat-num" id="s-total">…</div>
-          <div class="pstat-label">Σύνολο</div>
+          <div class="pstat-label">Total</div>
         </div>
       </div>
       <div class="pstat pstat-email">
@@ -1617,7 +1617,7 @@ input, select { font-family: inherit; }
         </div>
         <div>
           <div class="pstat-num" id="s-email">…</div>
-          <div class="pstat-label">Με Email</div>
+          <div class="pstat-label">With Email</div>
         </div>
       </div>
       <div class="pstat pstat-yt">
@@ -1660,18 +1660,18 @@ input, select { font-family: inherit; }
 
     <!-- Toolbar -->
     <div class="grid-toolbar">
-      <div class="result-count"><b id="result-count">…</b> creators βρέθηκαν</div>
+      <div class="result-count"><b id="result-count">…</b> creators found</div>
       <div class="toolbar-spacer"></div>
       <button class="card-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" style="padding:6px 12px;font-size:12px;white-space:nowrap">
         <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         Bulk Outreach
       </button>
       <select class="sort-select" id="sort-select" onchange="onSortChange()">
-        <option value="followers_desc">↓ Followers (πολλοί πρώτα)</option>
-        <option value="followers_asc">↑ Followers (λίγοι πρώτα)</option>
-        <option value="engagement_desc">🔥 Engagement Rate (υψηλό πρώτα)</option>
-        <option value="recent">🕐 Πρόσφατα προσθ.</option>
-        <option value="email_first">✉ Email πρώτα</option>
+        <option value="followers_desc">↓ Followers (most first)</option>
+        <option value="followers_asc">↑ Followers (least first)</option>
+        <option value="engagement_desc">🔥 Engagement Rate (highest first)</option>
+        <option value="recent">🕐 Recently added</option>
+        <option value="email_first">✉ Email first</option>
       </select>
     </div>
 
@@ -1679,13 +1679,13 @@ input, select { font-family: inherit; }
     <div class="content-area">
       <div id="loading-state" class="loading-state">
         <div class="spinner"></div>
-        <div class="loading-text">Φόρτωση creators…</div>
+        <div class="loading-text">Loading creators…</div>
       </div>
       <div id="creators-grid" class="creators-grid" hidden></div>
       <div id="empty-state" class="empty-state" hidden>
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <h3>Δεν βρέθηκαν creators</h3>
-        <p>Δοκίμασε διαφορετικά φίλτρα ή τρέξε ένα νέο scan από το sidebar.</p>
+        <h3>No creators found</h3>
+        <p>Try different filters or run a new scan from the sidebar.</p>
       </div>
     </div>
 
@@ -1693,11 +1693,11 @@ input, select { font-family: inherit; }
     <div class="pagination" id="pagination" hidden>
       <button class="page-btn" id="prev-btn" onclick="prevPage()" disabled>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg>
-        Προηγούμενη
+        Previous
       </button>
-      <span class="page-info" id="page-info">Σελίδα 1</span>
+      <span class="page-info" id="page-info">Page 1</span>
       <button class="page-btn" id="next-btn" onclick="nextPage()">
-        Επόμενη
+        Next
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
       </button>
     </div>
@@ -1730,12 +1730,12 @@ input, select { font-family: inherit; }
 <!-- ── NOTES MODAL ──────────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="notes-modal" hidden onclick="if(event.target===this)closeNotes()">
   <div class="modal-box">
-    <div class="modal-title" id="notes-modal-title">Σημειώσεις</div>
-    <div class="modal-sub" id="notes-modal-sub">Γράψε σημειώσεις για τον creator</div>
-    <textarea class="modal-textarea" id="notes-textarea" placeholder="π.χ. Στάλθηκε email 10/9, περιμένουμε απάντηση…"></textarea>
+    <div class="modal-title" id="notes-modal-title">Notes</div>
+    <div class="modal-sub" id="notes-modal-sub">Write notes for this creator</div>
+    <textarea class="modal-textarea" id="notes-textarea" placeholder="e.g. Sent email 10/9, awaiting reply…"></textarea>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeNotes()">Ακύρωση</button>
-      <button class="modal-btn modal-btn-save" onclick="saveNotes()">Αποθήκευση</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeNotes()">Cancel</button>
+      <button class="modal-btn modal-btn-save" onclick="saveNotes()">Save</button>
     </div>
   </div>
 </div>
@@ -1743,27 +1743,27 @@ input, select { font-family: inherit; }
 <!-- ── ADD TO LIST MODAL ──────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="list-modal" hidden onclick="if(event.target===this)closeListModal()">
   <div class="modal-box">
-    <div class="modal-title">Προσθήκη σε Λίστα</div>
-    <div class="modal-sub" id="list-modal-sub">Επίλεξε λίστα για τον creator</div>
+    <div class="modal-title">Add to List</div>
+    <div class="modal-sub" id="list-modal-sub">Select a list for this creator</div>
     <div class="list-modal-items" id="list-modal-items"></div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeListModal()">Κλείσιμο</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeListModal()">Close</button>
     </div>
   </div>
 </div>
 
 <!-- ── BULK ACTION BAR ───────────────────────────────────────────────────── -->
 <div class="bulk-bar" id="bulk-bar">
-  <span class="bulk-bar-count" id="bulk-count-label">0 creators επιλεγμένοι</span>
+  <span class="bulk-bar-count" id="bulk-count-label">0 creators selected</span>
   <button class="bulk-bar-btn" onclick="bulkSelectAllEmail()">
     <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-    Επιλογή με Email
+    Select with Email
   </button>
   <button class="bulk-bar-btn primary" onclick="openTemplateModal()" id="bulk-send-btn">
     <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-    Αποστολή Outreach
+    Send Outreach
   </button>
-  <button class="bulk-bar-btn" onclick="exitBulkMode()">✕ Ακύρωση</button>
+  <button class="bulk-bar-btn" onclick="exitBulkMode()">✕ Cancel</button>
 </div>
 
 <!-- ── OUTREACH TEMPLATE MODAL ─────────────────────────────────────────────── -->
@@ -1828,10 +1828,10 @@ input, select { font-family: inherit; }
       <div class="tpl-right">
         <div>
           <div class="tpl-label">Preview (1st recipient)</div>
-          <div class="tpl-preview" id="tpl-preview">Γράψε κάτι στο body για preview…</div>
+          <div class="tpl-preview" id="tpl-preview">Write something in the body to preview…</div>
         </div>
         <div>
-          <div class="tpl-label">Recipients (<span id="tpl-rcpt-count">0</span> με email)</div>
+          <div class="tpl-label">Recipients (<span id="tpl-rcpt-count">0</span> with email)</div>
           <div class="tpl-recipients" id="tpl-recipients"></div>
         </div>
       </div>
@@ -1841,12 +1841,12 @@ input, select { font-family: inherit; }
     <div id="smtp-banner-slot" style="padding:0 24px 4px"></div>
 
     <div class="tpl-footer">
-      <div class="tpl-send-count" id="tpl-send-count">0 emails θα σταλούν</div>
+      <div class="tpl-send-count" id="tpl-send-count">0 emails will be sent</div>
       <label class="tpl-dry-run">
         <input type="checkbox" id="tpl-dry-run" checked>
-        Dry run (δοκιμή — δεν στέλνει)
+        Dry run (test — does not send)
       </label>
-      <button class="modal-btn modal-btn-cancel" onclick="closeTemplateModal()">Ακύρωση</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeTemplateModal()">Cancel</button>
       <!-- Send button rendered by JS (Pro-locked for Starter, SMTP-gated for Pro) -->
       <span id="tpl-send-slot"></span>
     </div>
@@ -1885,7 +1885,7 @@ input, select { font-family: inherit; }
     </div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" onclick="testSmtp()" id="smtp-test-btn">Test Connection</button>
-      <button class="modal-btn modal-btn-cancel" onclick="closeSmtpModal()">Ακύρωση</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeSmtpModal()">Cancel</button>
       <button class="modal-btn modal-btn-save" onclick="saveSmtp()">Connect →</button>
     </div>
     <div id="smtp-msg" style="margin-top:8px;font-size:12px;font-weight:600"></div>
@@ -1896,19 +1896,19 @@ input, select { font-family: inherit; }
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="detail-drawer" role="dialog" aria-modal="true">
   <div class="drawer-header">
-    <button class="drawer-close" onclick="closeDrawer()" aria-label="Κλείσιμο">
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
     <div class="drawer-title" id="drawer-title">Creator Detail</div>
     <a href="#" id="drawer-open-link" target="_blank" rel="noopener" class="card-btn" style="padding:6px 10px;font-size:11px;white-space:nowrap;text-decoration:none;display:flex;align-items:center;gap:4px">
       <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-      Άνοιγμα
+      Open
     </a>
   </div>
   <div class="drawer-body" id="drawer-body">
     <div class="drawer-loading">
       <div class="spinner"></div>
-      <div class="loading-text">Φόρτωση…</div>
+      <div class="loading-text">Loading…</div>
     </div>
   </div>
 </div>
@@ -2067,8 +2067,8 @@ async function setOutreachStatus(creatorId, status) {
 // ── Notes ──────────────────────────────────────────────────────────────────────
 function openNotes(creatorId, name) {
   activeNotesId = creatorId;
-  document.getElementById('notes-modal-title').textContent = `Σημειώσεις — ${name}`;
-  document.getElementById('notes-modal-sub').textContent = 'Outreach notes για αυτόν τον creator';
+  document.getElementById('notes-modal-title').textContent = `Notes — ${name}`;
+  document.getElementById('notes-modal-sub').textContent = 'Outreach notes for this creator';
   const existing = outreachData[creatorId]?.notes || '';
   document.getElementById('notes-textarea').value = existing;
   document.getElementById('notes-modal').hidden = false;
@@ -2107,7 +2107,7 @@ function renderLists() {
     all.className = 'list-item active';
     all.dataset.listId = '';
     all.onclick = () => selectList(all, null);
-    all.innerHTML = `<span class="list-dot" style="background:#94a3b8"></span>Όλοι οι Creators<span class="list-count" id="lc-all">${fmt(state.total || 0)}</span>`;
+    all.innerHTML = `<span class="list-dot" style="background:#94a3b8"></span>All Creators<span class="list-count" id="lc-all">${fmt(state.total || 0)}</span>`;
     container.appendChild(all);
   }
   listsData.forEach(lst => {
@@ -2146,7 +2146,7 @@ async function promptNewList() {
 }
 
 async function deleteList(listId) {
-  if (!confirm('Διαγραφή λίστας;')) return;
+  if (!confirm('Delete this list?')) return;
   await fetch(`/api/lists/${listId}`, {method:'DELETE'});
   if (state.listId === listId) { state.listId = null; }
   await loadLists();
@@ -2308,7 +2308,7 @@ async function loadCreators() {
 
   const totalPages = Math.ceil(state.total / state.limit);
   const curPage = Math.floor(state.offset / state.limit) + 1;
-  document.getElementById('page-info').textContent = `Σελίδα ${curPage} / ${totalPages}`;
+  document.getElementById('page-info').textContent = `Page ${curPage} / ${totalPages}`;
   document.getElementById('prev-btn').disabled = state.offset === 0;
   document.getElementById('next-btn').disabled = state.offset + state.limit >= state.total;
   show('pagination');
@@ -2430,16 +2430,16 @@ function creatorCard(c) {
     <div class="card-actions">
       <a href="${esc(c.profile_url)}" target="_blank" rel="noopener" class="card-btn">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-        Άνοιγμα
+        Open
       </a>
       ${emailBtn}
-      <button class="card-btn card-btn-notes" onclick="openNotes(${cid},'${displayName.replace(/'/g,'')}')" title="${hasNotes ? 'Υπάρχουν σημειώσεις' : 'Προσθήκη σημείωσης'}">
+      <button class="card-btn card-btn-notes" onclick="openNotes(${cid},'${displayName.replace(/'/g,'')}')" title="${hasNotes ? 'Has notes' : 'Add note'}">
         <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5V8H8V7h5zm0 11H8v-1h5v1zm1-3H8v-1h6v1zm0-3H8v-1h6v1zM15 3.5L18.5 7H15z"/></svg>
         ${hasNotes ? '📋' : '+'}
       </button>
-      <button class="card-btn" onclick="openListModal(${cid},'${displayName.replace(/'/g,'')}')" title="Προσθήκη σε λίστα">
+      <button class="card-btn" onclick="openListModal(${cid},'${displayName.replace(/'/g,'')}')" title="Add to list">
         <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        Λίστα
+        List
       </button>
     </div>`;
   return el;
@@ -2492,8 +2492,8 @@ async function startScan() {
   const btn = document.getElementById('scan-btn');
   const log = document.getElementById('scan-log');
   btn.disabled = true;
-  btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></div> Σε εξέλιξη…';
-  log.textContent = 'Εκκίνηση scan…\n';
+  btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></div> Running…';
+  log.textContent = 'Starting scan…\n';
   const platform = document.getElementById('scan-platform').value;
   const niche    = document.getElementById('scan-niche').value;
   await fetch(`/api/scan/start?platform=${platform}&niche=${niche}`, { method: 'POST' });
@@ -2504,7 +2504,7 @@ async function startScan() {
     if (!s.running) {
       clearInterval(scanTimer);
       btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Εκκίνηση Scan';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Start Scan';
       await loadStats();
       await loadCreators();
     }
@@ -2617,11 +2617,11 @@ function exitBulkMode() {
 
 function updateBulkBar() {
   const count = selectedCreators.size;
-  document.getElementById('bulk-count-label').textContent = `${count} creator${count !== 1 ? 's' : ''} επιλεγμέν${count !== 1 ? 'οι' : 'ος'}`;
+  document.getElementById('bulk-count-label').textContent = `${count} creator${count !== 1 ? 's' : ''} selected`;
   const withEmail = [...selectedCreators.values()].filter(c => c.email).length;
   document.getElementById('bulk-send-btn').textContent = withEmail
-    ? `✉ Αποστολή (${withEmail} με email)`
-    : '✉ Αποστολή Outreach';
+    ? `✉ Send (${withEmail} with email)`
+    : '✉ Send Outreach';
 }
 
 function bulkSelectAllEmail() {
@@ -2642,7 +2642,7 @@ function bulkSelectAllEmail() {
 function openTemplateModal() {
   const withEmail = [...selectedCreators.values()].filter(c => c.email);
   if (!withEmail.length) {
-    alert('Δεν υπάρχουν επιλεγμένοι creators με email. Κάνε "Επιλογή με Email" ή επίλεξε creators χειροκίνητα.');
+    alert('No creators with email selected. Use "Select with Email" or select creators manually.');
     return;
   }
   // Populate recipients
@@ -2657,7 +2657,7 @@ function openTemplateModal() {
     rcptContainer.appendChild(row);
   });
   document.getElementById('tpl-rcpt-count').textContent = withEmail.length;
-  document.getElementById('tpl-send-count').textContent = `${withEmail.length} emails θα σταλούν`;
+  document.getElementById('tpl-send-count').textContent = `${withEmail.length} emails will be sent`;
   // Load default template if empty
   if (!document.getElementById('tpl-subject').value) loadPreset('collab');
   updatePreview();
@@ -2681,10 +2681,10 @@ function openTemplateModal() {
       sendSlot.innerHTML = _smtpConfigured
         ? `<button class="tpl-send-btn" id="tpl-send-btn" onclick="sendBulkEmails()">
              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-             Αποστολή
+             Send
            </button>`
         : `<button class="tpl-send-btn" style="opacity:0.5;cursor:not-allowed" disabled title="Connect your email first">
-             Αποστολή
+             Send
            </button>`;
     }
   } else {
@@ -2742,7 +2742,7 @@ function updatePreview() {
   if (first && body) {
     prev.textContent = _renderPreview(body, first);
   } else {
-    prev.textContent = 'Γράψε κάτι στο body για preview…';
+    prev.textContent = 'Write something in the body to preview…';
   }
 }
 
@@ -2756,11 +2756,11 @@ async function sendBulkEmails() {
   const subject  = document.getElementById('tpl-subject').value.trim();
   const bodyHtml = document.getElementById('tpl-body').value.trim();
   const dryRun   = document.getElementById('tpl-dry-run').checked;
-  if (!subject || !bodyHtml) { alert('Συμπλήρωσε Subject και Body!'); return; }
+  if (!subject || !bodyHtml) { alert('Please fill in Subject and Body!'); return; }
 
   const btn = document.getElementById('tpl-send-btn');
   btn.disabled = true;
-  btn.textContent = dryRun ? '⏳ Testing…' : '⏳ Αποστολή…';
+  btn.textContent = dryRun ? '⏳ Testing…' : '⏳ Sending…';
 
   try {
     const resp = await fetch('/api/outreach/send-bulk', {
@@ -2784,8 +2784,8 @@ async function sendBulkEmails() {
 
     const capNote = data.daily_cap ? ` (daily cap: ${data.daily_cap})` : '';
     const msg = dryRun
-      ? `✅ Dry run OK — ${data.sent} emails θα στέλνονταν`
-      : `✅ Εστάλησαν ${data.sent} emails!${capNote} (${data.failed} failed)`;
+      ? `✅ Dry run OK — ${data.sent} emails would be sent`
+      : `✅ Sent ${data.sent} emails!${capNote} (${data.failed} failed)`;
     alert(msg);
 
     if (!dryRun && data.sent > 0) {
@@ -2807,13 +2807,13 @@ async function sendBulkEmails() {
     if (e.message.includes('SMTP not configured')) {
       closeTemplateModal();
       openSmtpModal();
-      alert('Πρέπει να ρυθμίσεις SMTP πρώτα!');
+      alert('Please set up SMTP first!');
     } else {
-      alert('Σφάλμα: ' + e.message);
+      alert('Error: ' + e.message);
     }
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Αποστολή';
+    btn.textContent = 'Send';
   }
 }
 
@@ -2936,7 +2936,7 @@ async function openDrawer(creatorId) {
   const link    = document.getElementById('drawer-open-link');
 
   // Show skeleton
-  body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><div class="loading-text">Φόρτωση…</div></div>';
+  body.innerHTML = '<div class="drawer-loading"><div class="spinner"></div><div class="loading-text">Loading…</div></div>';
   overlay.classList.add('open');
   drawer.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2982,8 +2982,8 @@ async function openDrawer(creatorId) {
           <div class="d-info-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
           <span class="d-info-label">Email</span>
           <span class="d-info-val" id="d-email-val">${esc(c.email)}</span>
-          <button class="d-copy-btn" onclick="copyEmail()">Αντιγραφή</button>
-          <a href="mailto:${esc(c.email)}" class="d-copy-btn" style="text-decoration:none">Αποστολή</a>
+          <button class="d-copy-btn" onclick="copyEmail()">Copy</button>
+          <a href="mailto:${esc(c.email)}" class="d-copy-btn" style="text-decoration:none">Send email</a>
         </div>`
       : '';
 
@@ -3007,7 +3007,7 @@ async function openDrawer(creatorId) {
 
       <!-- Stats -->
       <div class="d-section">
-        <div class="d-section-title">Στατιστικά</div>
+        <div class="d-section-title">Statistics</div>
         <div class="d-stats">
           <div class="d-stat">
             <div class="d-stat-val">${fmtNum(c.followers)}</div>
@@ -3026,12 +3026,12 @@ async function openDrawer(creatorId) {
             <div class="d-stat-lbl">Videos</div>
           </div>
           ${c.following != null ? `<div class="d-stat"><div class="d-stat-val">${fmtNum(c.following)}</div><div class="d-stat-lbl">Following</div></div>` : ''}
-          ${countryLang ? `<div class="d-stat"><div class="d-stat-val" style="font-size:13px">${countryLang}</div><div class="d-stat-lbl">Χώρα / Γλώσσα</div></div>` : ''}
+          ${countryLang ? `<div class="d-stat"><div class="d-stat-val" style="font-size:13px">${countryLang}</div><div class="d-stat-lbl">Country / Language</div></div>` : ''}
         </div>
       </div>
 
       <!-- Email -->
-      ${emailHtml ? `<div class="d-section"><div class="d-section-title">Επικοινωνία</div>${emailHtml}</div>` : ''}
+      ${emailHtml ? `<div class="d-section"><div class="d-section-title">Contact</div>${emailHtml}</div>` : ''}
 
       <!-- Bio -->
       ${c.bio ? `<div class="d-section"><div class="d-section-title">Bio</div><div class="d-bio">${esc(c.bio)}</div></div>` : ''}
@@ -3047,22 +3047,22 @@ async function openDrawer(creatorId) {
             ${statusOptions}
           </select>
         </div>
-        <textarea class="d-notes-area" id="d-notes-area" placeholder="Σημειώσεις outreach…">${esc(c.outreach_notes || '')}</textarea>
+        <textarea class="d-notes-area" id="d-notes-area" placeholder="Outreach notes…">${esc(c.outreach_notes || '')}</textarea>
         <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
-          <span class="d-save-ok" id="d-save-ok">✓ Αποθηκεύτηκε</span>
-          <button class="d-save-btn" onclick="drawerSaveNotes()">Αποθήκευση</button>
+          <span class="d-save-ok" id="d-save-ok">✓ Saved</span>
+          <button class="d-save-btn" onclick="drawerSaveNotes()">Save</button>
         </div>
       </div>
 
       <!-- Auth Score (if available) -->
       ${c.auth_score != null ? `
       <div class="d-section">
-        <div class="d-section-title">Αυθεντικότητα</div>
+        <div class="d-section-title">Authenticity</div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
           <div style="font-size:28px;font-weight:800;color:var(--text)">${c.auth_score}</div>
           <div>
             ${authScoreBadge(c.auth_score, true)}
-            <div style="font-size:11px;color:var(--text3);margin-top:3px">Βασίζεται σε ER, bio, views</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">Based on ER, bio, views</div>
           </div>
         </div>
         <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
@@ -3073,11 +3073,11 @@ async function openDrawer(creatorId) {
       <!-- Growth Chart -->
       <div class="d-section" id="growth-section-${c.id}">
         <div class="d-section-title" style="display:flex;align-items:center;justify-content:space-between">
-          Ανάπτυξη Followers
+          Follower Growth
           <span id="growth-delta-${c.id}"></span>
         </div>
         <div class="growth-chart-wrap" id="growth-chart-${c.id}">
-          <div class="growth-no-data">Φόρτωση ιστορικού…</div>
+          <div class="growth-no-data">Loading history…</div>
         </div>
       </div>
 
@@ -3094,7 +3094,7 @@ async function openDrawer(creatorId) {
           <input class="filter-input" id="ai-brand-${c.id}" placeholder="Brand name" style="flex:1;min-width:120px">
           <button class="ai-btn" onclick="aiWriteEmail(${c.id})" id="ai-write-btn-${c.id}">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg>
-            Γράψε Email
+            Write Email
           </button>
         </div>
         <div id="ai-result-${c.id}" style="display:none">
@@ -3103,8 +3103,8 @@ async function openDrawer(creatorId) {
           <div class="tpl-label">AI Body</div>
           <textarea class="tpl-textarea" id="ai-body-${c.id}" style="min-height:160px;resize:vertical" readonly></textarea>
           <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="modal-btn modal-btn-save" style="font-size:12px" onclick="useAiEmailInComposer(${c.id})">Χρήση στο Bulk Outreach</button>
-            <button class="d-copy-btn" onclick="copyAiEmail(${c.id})">Αντιγραφή</button>
+            <button class="modal-btn modal-btn-save" style="font-size:12px" onclick="useAiEmailInComposer(${c.id})">Use in Bulk Outreach</button>
+            <button class="d-copy-btn" onclick="copyAiEmail(${c.id})">Copy</button>
           </div>
         </div>
         ` : `
@@ -3127,14 +3127,14 @@ async function openDrawer(creatorId) {
       <!-- Open profile -->
       <a href="${esc(c.profile_url || '#')}" target="_blank" rel="noopener" class="d-open-btn">
         <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-        Άνοιγμα στο ${p.label}
+        Open on ${p.label}
       </a>
     `;
     // Load growth chart async (non-blocking)
     loadGrowthChart(creatorId);
 
   } catch(err) {
-    body.innerHTML = `<div style="color:var(--text3);padding:20px;text-align:center">Σφάλμα φόρτωσης</div>`;
+    body.innerHTML = `<div style="color:var(--text3);padding:20px;text-align:center">Failed to load</div>`;
   }
 }
 
@@ -3351,7 +3351,7 @@ async function aiWriteEmail(creatorId) {
   } catch(e) {
     alert('AI Writer error: ' + e.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg> Γράψε Email'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2L9.9 8.1 4 10l6.1 2.1L12 18l2.1-6.1L20 10l-6.1-2.1L12 2z"/></svg> Write Email'; }
   }
 }
 
