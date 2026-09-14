@@ -3,6 +3,8 @@ Niche classifier — keyword-based, zero API cost.
 Κατηγοριοποιεί creators από bio, description και tags.
 """
 
+import re
+
 NICHE_KEYWORDS: dict[str, list[str]] = {
     "Gaming": [
         "gaming", "gamer", "game", "gameplay", "esports", "streamer", "twitch",
@@ -120,10 +122,71 @@ def classify_niche(text: str) -> tuple[str, list[str]]:
 
 
 def extract_email(text: str) -> str | None:
-    """Βρίσκει email μέσα σε bio/description."""
-    import re
+    """Βρίσκει email μέσα σε bio/description.
+
+    Decodes JSON/HTML escapes before matching, then rejects:
+    - Placeholder domains (example.com, domain.com, …)
+    - Platform/tracker domains (wixpress, sentry, youtube, skool, …)
+    - .gov addresses
+    - Junk local parts (noreply, u003e, hex IDs, …)
+    - URL fragments containing ?body= (Amazon share links)
+    """
+    import html
     if not text:
         return None
+
+    # 1. Decode JSON unicode escapes (> → >) and HTML entities (&amp; → &)
+    try:
+        text = text.encode('utf-8').decode('unicode_escape')
+    except Exception:
+        pass
+    try:
+        text = html.unescape(text)
+    except Exception:
+        pass
+
+    # 2. Strip any ?body=… or &… URL query tails that can look email-ish
+    text = re.sub(r'\?[^\s@]*', ' ', text)
+
+    # 3. Extract
     pattern = r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
     match = re.search(pattern, text)
-    return match.group(0) if match else None
+    if not match:
+        return None
+    # Strip trailing punctuation/backslashes/quotes that scanners sometimes grab
+    email = re.sub(r"[\\'\"><\s]+$", "", match.group(0)).rstrip('.')
+
+    # 4. Validate and filter
+    if not _email_ok(email):
+        return None
+    return email
+
+
+# Bad domains / bad local parts — mirrors factory-affiliate-outreach.js exactly.
+# Keep this conservative: only block things that are provably not real creator emails.
+_BAD_DOMAIN_RE = re.compile(
+    r'(^|\.)(example\.com|domain\.com|email\.com|user\.com|'
+    r'skool\.com|wixpress\.com|sentry[\w\-.]*|sentry\.io|'
+    r'youtube\.com|google\.com|gumroad\.com|patreon\.com|'
+    r'linktr\.ee|beacons\.ai|amazon\.com|boosty\.to|'
+    r'[\w\-]+\.gov|[\w\-]+\.gov\.[a-z]{2})$',
+    re.IGNORECASE,
+)
+# Only exact-match clearly fake/system local parts; never block info/support/hello
+# on creator-owned domains — those are legit business emails.
+_BAD_LOCAL_RE = re.compile(
+    r'^(u003e|noreply|no[\-_]reply|donotreply|do[\-_]not[\-_]reply|'
+    r'user|example|test|name|your(?:name|email)?)$'
+    r'|^[0-9a-f]{24,}$',           # hex Sentry DSN local parts
+    re.IGNORECASE,
+)
+def _email_ok(email: str) -> bool:
+    """Returns True if email looks like a real, reachable creator address."""
+    if not re.match(r'^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$', email, re.IGNORECASE):
+        return False
+    local, _, domain = email.lower().partition('@')
+    if _BAD_DOMAIN_RE.search(domain):
+        return False
+    if _BAD_LOCAL_RE.match(local):
+        return False
+    return True
