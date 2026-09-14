@@ -2009,7 +2009,7 @@ async function loadOutreach() {
 }
 
 const STATUS_CONFIG = {
-  new:        { label: '●  Νέος',       cls: 'ob-new',        dot: '#94a3b8' },
+  new:        { label: '●  New',         cls: 'ob-new',        dot: '#94a3b8' },
   contacted:  { label: '📤 Contacted',  cls: 'ob-contacted',  dot: '#1d4ed8' },
   replied:    { label: '💬 Replied',     cls: 'ob-replied',    dot: '#d97706' },
   interested: { label: '⭐ Interested',  cls: 'ob-interested', dot: '#059669' },
@@ -2134,7 +2134,7 @@ function selectList(el, listId) {
 }
 
 async function promptNewList() {
-  const name = prompt('Όνομα λίστας (π.χ. Nike Campaign):');
+  const name = prompt('List name (e.g. Spring campaign):');
   if (!name) return;
   const color = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6'][Math.floor(Math.random()*6)];
   await fetch('/api/lists', {
@@ -2178,7 +2178,7 @@ async function openListModal(creatorId, name) {
   } catch(e) {}
 
   if (!listsData.length) {
-    items.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Δεν υπάρχουν λίστες. Δημιούργησε μια πρώτα!</div>';
+    items.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">No lists yet. Create one to start saving creators.</div>';
   } else {
     for (const lst of listsData) {
       const row = document.createElement('div');
