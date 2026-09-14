@@ -189,6 +189,15 @@ def _deactivate(m: dict) -> dict:
     return {"ok": True, "revoked": len(revoked)}
 
 
+def _ours(m: dict) -> bool:
+    """Whop webhooks are company-wide: a Dental Case Preflight membership arrives
+    here too. Only act on CreatorScan's own product, or a cancelled dental plan
+    would revoke a CreatorScan key held under the same email."""
+    want = os.getenv("WHOP_PRODUCT_ID", "")
+    got = (m.get("product") or {}).get("id") or m.get("product_id")
+    return not want or got == want
+
+
 @router.post("/api/webhooks/whop")
 async def whop_webhook(request: Request):
     raw = await request.body()
@@ -200,7 +209,9 @@ async def whop_webhook(request: Request):
     except ValueError:
         return JSONResponse({"error": "invalid_json"}, status_code=400)
     kind, data = event.get("type") or event.get("action"), event.get("data") or {}
-    if kind in ("membership.activated", "membership.went_valid"):
+    if not _ours(data):
+        result = {"skipped": "other product"}
+    elif kind in ("membership.activated", "membership.went_valid"):
         result = _activate(data)
     elif kind in ("membership.deactivated", "membership.went_invalid"):
         result = _deactivate(data)
