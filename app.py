@@ -62,7 +62,7 @@ ON_VERCEL       = bool(os.getenv("VERCEL"))
 
 # Paths that never require auth
 _PUBLIC_PATHS = {
-    "/", "/app", "/join", "/pricing", "/privacy", "/remove",
+    "/", "/app", "/join", "/pricing", "/privacy", "/remove", "/favicon.ico",
     "/api/auth/verify", "/api/join", "/api/remove", "/api/webhooks/whop",
 }
 # Paths only the operator (HTTP Basic) may use — never a customer license

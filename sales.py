@@ -31,7 +31,7 @@ from email.mime.text import MIMEText
 from pathlib import Path
 
 from fastapi import APIRouter, Body, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 if os.getenv("SUPABASE_URL"):
     import db_cloud as db
@@ -55,6 +55,17 @@ def _page(name: str) -> HTMLResponse:
 @router.get("/", response_class=HTMLResponse)
 async def landing():
     return _page("landing.html")
+
+
+_FAVICON = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0E6B5C"/>'
+            '<circle cx="14" cy="14" r="7" fill="none" stroke="#fff" stroke-width="3"/>'
+            '<path d="M19 19l6 6" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>')
+
+
+@router.get("/favicon.ico")
+async def favicon():
+    # Browsers ask for it on every page; unanswered it logged a 401 in customers' consoles
+    return Response(_FAVICON, media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=604800"})
 
 
 @router.get("/pricing", response_class=HTMLResponse)
