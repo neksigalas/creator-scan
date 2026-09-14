@@ -409,6 +409,9 @@ def _smtp_encrypt(plaintext: str) -> str:
     from cryptography.fernet import Fernet
     key = os.getenv("SMTP_ENCRYPTION_KEY", "")
     if not key:
+        # Never store a customer's mailbox password in clear on the live site
+        if os.getenv("VERCEL"):
+            raise RuntimeError("SMTP_ENCRYPTION_KEY is not set — refusing to store an unencrypted password")
         return plaintext  # local dev — no encryption
     return Fernet(key.encode()).encrypt(plaintext.encode()).decode()
 

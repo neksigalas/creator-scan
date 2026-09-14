@@ -700,9 +700,9 @@ _UNSUB_FOOTER = """
 <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
 <p style="font-size:11px;color:#999;text-align:center">
   You received this email because a brand found your creator profile on
-  <a href="https://creatorscan.io" style="color:#999">CreatorScan</a>.
+  <a href="https://creator-scan.vercel.app" style="color:#999">CreatorScan</a>.
   To remove yourself from the directory, visit
-  <a href="https://creatorscan.io/remove" style="color:#999">creatorscan.io/remove</a>.
+  <a href="https://creator-scan.vercel.app/remove" style="color:#999">creator-scan.vercel.app/remove</a>.
 </p>
 """
 
