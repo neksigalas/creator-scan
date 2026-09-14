@@ -1,0 +1,5 @@
+# Everything the web app needs, plus the local-only scrapers.
+# Install: pip install -r requirements-local.txt && playwright install chromium
+-r requirements.txt
+playwright>=1.44.0
+instaloader

@@ -7,6 +7,6 @@ fastapi==0.115.0
 uvicorn==0.30.6
 supabase==2.10.0
 httpx==0.27.2
-# Playwright (local scanning only — not on Vercel)
-# Install: pip install playwright && playwright install chromium
-playwright>=1.44.0
+# Playwright is for local scanning only and must NOT be here: Vercel installs
+# this file, and on 14/9/2026 an unpinned playwright pulled greenlet 3.5.6,
+# which has no Linux wheel, so every deploy failed. See requirements-local.txt.
