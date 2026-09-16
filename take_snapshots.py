@@ -24,7 +24,7 @@ def main():
     if args.dry_run:
         print("[DRY RUN] No data will be written.")
         # List creators with followers
-        creators = db.supabase.table("cs_creators").select("id, username, platform, followers").execute()
+        creators = db.get_client().table("cs_creators").select("id, username, platform, followers").execute()
         rows = creators.data or []
         print(f"Would snapshot {len(rows)} creators:")
         for c in rows[:20]:
