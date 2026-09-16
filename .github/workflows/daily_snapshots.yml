@@ -29,14 +29,12 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        working-directory: creator-scan
         run: pip install -r requirements.txt
 
       - name: Run snapshots
-        working-directory: creator-scan
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             python take_snapshots.py --dry-run
